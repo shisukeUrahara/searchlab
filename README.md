@@ -19,7 +19,7 @@ Run: [`runs/20261027T115232Z-test-k60`](runs/20261027T115232Z-test-k60) · analy
 **What this does and does not show**
 - Recall@5 is saturated. The corpus has only 78 chunks, so the top 5 is about 6% of it. Use MRR@10 to compare methods here.
 - N=30 is small. No confidence intervals were computed. Treat gaps of a few hundredths as noise.
-- I expected dense search to miss exact API identifiers. **It did not.** Dense ranked `X-Hub-Signature-256` first where BM25 ranked it 4th, while BM25 won on `secure_compare` and `x-ratelimit-used`. Hybrid was never the worst method on any query where the methods differed.
+- I expected dense search to miss exact API identifiers. **It did not.** Dense ranked `X-Hub-Signature-256` first where BM25 ranked it 4th, while BM25 won on `secure_compare` and `x-ratelimit-used`. Hybrid never ranked the first expected chunk below 3rd and was never strictly worse than both other methods (it tied the lowest rank on 3 queries).
 - Queries are synthetic: written by the author with model help, then keyword-checked against their gold chunks. Some queries have more than one acceptable chunk.
 
 ## Run it
