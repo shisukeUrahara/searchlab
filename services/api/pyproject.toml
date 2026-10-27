@@ -43,3 +43,7 @@ select = ["E", "F", "I", "UP", "B"]
 strict = true
 files = ["src"]
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["rank_bm25"]
+ignore_missing_imports = true
