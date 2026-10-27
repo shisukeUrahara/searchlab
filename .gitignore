@@ -7,3 +7,6 @@ __pycache__/
 !.env.example
 *.log
 .DS_Store
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/

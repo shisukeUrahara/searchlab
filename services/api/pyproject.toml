@@ -1,0 +1,45 @@
+[project]
+name = "searchlab"
+version = "0.1.0"
+description = "Compare BM25, dense and hybrid retrieval on developer docs"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.7",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "rank-bm25>=0.2.2",
+  "qdrant-client>=1.10",
+  "openai>=1.40",
+  "httpx>=0.27",
+  "typer>=0.12",
+  "numpy>=1.26",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11"]
+
+[project.scripts]
+searchlab = "searchlab.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/searchlab"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+strict = true
+files = ["src"]
+plugins = ["pydantic.mypy"]
