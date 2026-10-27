@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "source_id": "github-docs/rate-limits-for-the-rest-api",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "repo_path": "content/rest/using-the-rest-api/rate-limits-for-the-rest-api.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "3815984e337dad4da3ceb1a60da044da5c05db5df969719c40e10dd9a0d490ac",
+      "file": "rate-limits-for-the-rest-api.md"
+    },
+    {
+      "source_id": "github-docs/using-pagination-in-the-rest-api",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api",
+      "repo_path": "content/rest/using-the-rest-api/using-pagination-in-the-rest-api.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "418bdf281d74a89c7dabedc4af53a6f7b286f2416e7670d9cc71453db08d8640",
+      "file": "using-pagination-in-the-rest-api.md"
+    },
+    {
+      "source_id": "github-docs/about-authentication-with-a-github-app",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app",
+      "repo_path": "content/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "d48d87fce77312248ddcfa6cca104c9616bf2b255b52a39a6d02353e5786b438",
+      "file": "about-authentication-with-a-github-app.md"
+    },
+    {
+      "source_id": "github-docs/authenticating-as-a-github-app-installation",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation",
+      "repo_path": "content/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "7e9889be9269d3dceacf83d0caccadfb71dd556ee24dc13f601e4a7bf1784c27",
+      "file": "authenticating-as-a-github-app-installation.md"
+    },
+    {
+      "source_id": "github-docs/handling-webhook-deliveries",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/webhooks/using-webhooks/handling-webhook-deliveries",
+      "repo_path": "content/webhooks/using-webhooks/handling-webhook-deliveries.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "dc3d8690b55a82e113cbd784432732225c120a71c0914136d9b96a086ae12b53",
+      "file": "handling-webhook-deliveries.md"
+    },
+    {
+      "source_id": "github-docs/validating-webhook-deliveries",
+      "company_reference": "GitHub",
+      "url": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+      "repo_path": "content/webhooks/using-webhooks/validating-webhook-deliveries.md",
+      "repo_commit": "9568e964d18d76267faf57050dc662c450a13214",
+      "retrieved_at_utc": "2026-10-27T11:38:57Z",
+      "license": "CC BY 4.0 (content), per github/docs repository",
+      "transformation": "frontmatter removed; github.com (fpt) Liquid branches kept; reusables dropped",
+      "sha256": "0f52949016802f0f36e6da2150a53990504557856753e3bebda9bd7e08c5c265",
+      "file": "validating-webhook-deliveries.md"
+    }
+  ]
+}
