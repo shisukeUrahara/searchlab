@@ -1,0 +1,15 @@
+{"query_id": "q01", "text": "`x-ratelimit-remaining`", "query_class": "exact_id", "split": "dev", "gold_chunk_ids": ["87187b98d22752e1", "7fd402b14646a8b2"]}
+{"query_id": "q04", "text": "per_page", "query_class": "exact_id", "split": "dev", "gold_chunk_ids": ["3f9dca04d7644c1f"]}
+{"query_id": "q05", "text": "rel=\"next\"", "query_class": "exact_id", "split": "dev", "gold_chunk_ids": ["f2dbbf553ffdb091", "95526083ff75f460"]}
+{"query_id": "q09", "text": "smee.io", "query_class": "exact_id", "split": "dev", "gold_chunk_ids": ["d0e7ad7ed7267df3"]}
+{"query_id": "q13", "text": "octokit.paginate()", "query_class": "exact_id", "split": "dev", "gold_chunk_ids": ["93c6670fb30e0257", "7976d94e37c4e4a7"]}
+{"query_id": "q16", "text": "What happens when I exceed the rate limit?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["6425ee5a5d0d85e9"]}
+{"query_id": "q19", "text": "How do I check how many API calls I have left?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["87187b98d22752e1", "7fd402b14646a8b2"]}
+{"query_id": "q23", "text": "What token does an app use to act as itself?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["1f04855c2f4e48bb"]}
+{"query_id": "q27", "text": "How can I be sure a webhook delivery really came from GitHub?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["e4518b9eb98c59b6", "5187e031b2cd14d9"]}
+{"query_id": "q29", "text": "How do I test webhooks on my laptop?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["d0e7ad7ed7267df3", "0e6862bbd1823a22"]}
+{"query_id": "q33", "text": "Why do I get fewer results than I expected when I ask for a huge page size?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["3f9dca04d7644c1f"]}
+{"query_id": "q35", "text": "Do Git LFS downloads count toward the rate limit?", "query_class": "paraphrase", "split": "dev", "gold_chunk_ids": ["43985f64b6c5ef1f"]}
+{"query_id": "q36", "text": "Is the rate limit different inside GitHub Actions workflows?", "query_class": "distractor", "split": "dev", "gold_chunk_ids": ["360ecd75b709ac26"]}
+{"query_id": "q39", "text": "Can an installation access token be used on every REST endpoint?", "query_class": "distractor", "split": "dev", "gold_chunk_ids": ["3a4b07f43f9a9fb1"]}
+{"query_id": "q43", "text": "Are rate limit values identical from one response to the next?", "query_class": "distractor", "split": "dev", "gold_chunk_ids": ["7fd402b14646a8b2"]}

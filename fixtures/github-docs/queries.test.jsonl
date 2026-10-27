@@ -1,0 +1,30 @@
+{"query_id": "q02", "text": "`x-ratelimit-reset`", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["87187b98d22752e1", "6425ee5a5d0d85e9"]}
+{"query_id": "q03", "text": "retry-after", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["6425ee5a5d0d85e9"]}
+{"query_id": "q06", "text": "X-Hub-Signature-256", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["5187e031b2cd14d9"]}
+{"query_id": "q07", "text": "sha256=", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["92a1b77d47a0ec3e"]}
+{"query_id": "q08", "text": "GITHUB_TOKEN", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["360ecd75b709ac26"]}
+{"query_id": "q10", "text": "x-ratelimit-resource", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["87187b98d22752e1"]}
+{"query_id": "q11", "text": "secure_compare", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["92a1b77d47a0ec3e"]}
+{"query_id": "q12", "text": "crypto.timingSafeEqual", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["92a1b77d47a0ec3e"]}
+{"query_id": "q14", "text": "Authorization: Bearer INSTALLATION_ACCESS_TOKEN", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["767964ea72cce07e"]}
+{"query_id": "q15", "text": "x-ratelimit-used", "query_class": "exact_id", "split": "test", "gold_chunk_ids": ["87187b98d22752e1"]}
+{"query_id": "q17", "text": "How many requests can I make per hour?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["87187b98d22752e1"]}
+{"query_id": "q18", "text": "How do I get a higher rate limit?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["68ed0a19b5259364"]}
+{"query_id": "q20", "text": "How large can one page of results be?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["3f9dca04d7644c1f"]}
+{"query_id": "q21", "text": "How do I fetch the next page of results?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["0bf748daadcedd7b", "f2dbbf553ffdb091"]}
+{"query_id": "q22", "text": "How do I loop through all pages in a script?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["6a43b385d210c8ef", "de78e31a858e7ddb"]}
+{"query_id": "q24", "text": "How does an app act for an installation?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["52825e57ed87a4c9"]}
+{"query_id": "q25", "text": "How does an app act on behalf of a user?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["ea0cb9e1dfa989db"]}
+{"query_id": "q26", "text": "How long is an installation token valid?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["c3dde8ca70bcf3ac"]}
+{"query_id": "q28", "text": "How do I create a secret for my webhook?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["1f23abafb1d89e53"]}
+{"query_id": "q30", "text": "Why does my local webhook delivery never arrive?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["9af6a6e55c3b86dc"]}
+{"query_id": "q31", "text": "Where should I store the webhook secret safely?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["037c91e536342222"]}
+{"query_id": "q32", "text": "Which hash algorithm signs the webhook payload?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["92a1b77d47a0ec3e"]}
+{"query_id": "q34", "text": "How are rate limits different for OAuth apps?", "query_class": "paraphrase", "split": "test", "gold_chunk_ids": ["dd2f74bfe335af45"]}
+{"query_id": "q37", "text": "Which header says how long to wait after a secondary rate limit?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["6425ee5a5d0d85e9"]}
+{"query_id": "q38", "text": "Does the API return an error if per_page is too large?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["3f9dca04d7644c1f"]}
+{"query_id": "q40", "text": "Is the header X-Hub-Signature or X-Hub-Signature-256?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["5187e031b2cd14d9"]}
+{"query_id": "q41", "text": "Can I compare webhook signatures with a plain == operator?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["92a1b77d47a0ec3e"]}
+{"query_id": "q42", "text": "Does the link header always appear in a response?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["0bf748daadcedd7b"]}
+{"query_id": "q44", "text": "Do I need to authenticate as the app itself before creating an installation token?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["1f04855c2f4e48bb"]}
+{"query_id": "q45", "text": "Which webhook example uses Express instead of Sinatra?", "query_class": "distractor", "split": "test", "gold_chunk_ids": ["4250e4d145d4fb7b"]}
