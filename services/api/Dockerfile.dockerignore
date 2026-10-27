@@ -1,0 +1,11 @@
+# Used because the build context is the repo root.
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/__pycache__
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+apps
+.git
