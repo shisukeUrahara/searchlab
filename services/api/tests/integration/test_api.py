@@ -71,3 +71,22 @@ def test_eval_run_roundtrip_and_path_traversal_blocked(client: TestClient) -> No
     assert run["manifest"]["sample_count"] == 15 and len(run["cases"]) == 45
     assert client.get("/eval-runs/..%2Fetc").status_code == 404
     assert client.get("/eval-runs/missing").json()["code"] == "run_not_found"
+
+
+def test_uncached_query_without_api_key_returns_503(tmp_path: Path) -> None:
+    from qdrant_client import QdrantClient
+
+    from searchlab.embeddings.cache import CachingEmbedder
+    from searchlab.retrieval.dense import DenseRetriever, build_dense_index
+    from searchlab.store.qdrant_store import QdrantVectorStore
+
+    chunks = load_chunks(CORPUS)
+    live = FakeEmbedder()
+    store = QdrantVectorStore(QdrantClient(":memory:"))
+    build_dense_index(chunks, live, store)
+    offline = CachingEmbedder(tmp_path / "cache", live.model_id, inner=None)  # empty cache
+    search = SearchService({"dense": DenseRetriever(offline, store)}, chunks)
+    app = create_app(AppDeps(search, CORPUS, tmp_path, lambda s, k: run_eval(CORPUS, live, s, k)))
+    r = TestClient(app).post("/search", json={"query": "never embedded", "methods": ["dense"]})
+    assert r.status_code == 503 and r.json()["code"] == "embedding_unavailable"
+    assert r.json()["request_id"]

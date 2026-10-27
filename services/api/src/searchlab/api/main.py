@@ -20,7 +20,8 @@ def build() -> object:
     load_env(REPO_ROOT / "services" / "api" / ".env")
     embedder = make_embedder(CORPUS_DIR)
     chunks = load_chunks(CORPUS_DIR)
-    search = SearchService(make_retrievers(chunks, embedder), chunks)
+    retrievers = make_retrievers(chunks, embedder, qdrant_url=os.environ.get("QDRANT_URL"))
+    search = SearchService(retrievers, chunks)
 
     def eval_fn(split: Split, rrf_k: int) -> EvalOutcome:
         return run_eval(CORPUS_DIR, embedder, split, rrf_k, runs_dir=RUNS_DIR, repo_root=REPO_ROOT)
