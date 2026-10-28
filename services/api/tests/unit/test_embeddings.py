@@ -25,6 +25,7 @@ def test_cache_hits_skip_inner_and_dedupe(tmp_path: Path) -> None:
     inner = Counting()
     c = CachingEmbedder(tmp_path, "m", inner)
     assert c.embed(["aa", "b", "aa"]) == [[2.0, 1.0], [1.0, 1.0], [2.0, 1.0]]
+    assert (tmp_path / "m.npz").exists()
     assert inner.calls == [["aa", "b"]]
     c.embed(["aa", "b"])
     assert len(inner.calls) == 1
@@ -69,3 +70,23 @@ def test_load_env_does_not_override(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     import os
 
     assert os.environ["A_KEY"] == "one" and os.environ["B_KEY"] == "keep"
+
+
+def test_legacy_jsonl_cache_is_read_and_saved_as_npz(tmp_path: Path) -> None:
+    import hashlib
+    import json
+
+    key = hashlib.sha256(b"old").hexdigest()
+    (tmp_path / "m.jsonl").write_text(json.dumps({"k": key, "v": [0.5, 0.25]}) + "\n")
+    c = CachingEmbedder(tmp_path, "m", inner=None)
+    assert c.embed(["old"]) == [[0.5, 0.25]]
+    c.save()
+    (tmp_path / "m.jsonl").unlink()
+    assert CachingEmbedder(tmp_path, "m").embed(["old"]) == [[0.5, 0.25]]
+
+
+def test_vectors_stored_as_float16(tmp_path: Path) -> None:
+    import numpy as np
+
+    CachingEmbedder(tmp_path, "m", Counting()).embed(["abc"])
+    assert np.load(tmp_path / "m.npz")["vectors"].dtype == np.float16

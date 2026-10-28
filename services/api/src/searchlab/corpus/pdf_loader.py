@@ -16,7 +16,7 @@ from pypdf import PdfReader
 RUNNING_LINE_SHARE = 0.3
 SKIP_TITLES = ("title page", "table of contents", "table of figures", "table of tables",
                "table of boxes", "contents", "bibliography", "references", "index",
-               "figures", "tables", "list of figures", "list of tables")
+               "figures", "tables", "boxes", "list of figures", "list of tables")
 
 # "Chapter 6. Systems Engineering Management Plan" or "6.1 Systems Engineering Management Plan
 # Function". Three-level numbers (6.1.1) are requirement paragraphs in NPRs, not headings.

@@ -9,6 +9,7 @@ from searchlab.corpus import pipeline
 from searchlab.corpus.manifest import verify_manifest, write_manifest
 from searchlab.corpus.registry import REPO_ROOT, CorpusSpec, get_corpus
 from searchlab.domain.models import Split
+from searchlab.embeddings.cache import CacheMissError
 from searchlab.eval.runner import ScoreRow
 from searchlab.services.eval_service import run_eval
 from searchlab.wiring import load_chunks, make_embedder, make_retrievers
@@ -83,13 +84,30 @@ def _print_scores(scores: list[ScoreRow]) -> None:
 
 
 @app.command()
+def embed() -> None:
+    """Embed every chunk (cache first) so search and eval work offline."""
+    from searchlab.retrieval.dense import chunk_embedding_text
+
+    spec = _corpus()
+    chunks = load_chunks(spec.dir)
+    embedder = make_embedder(spec.dir)
+    embedder.embed([chunk_embedding_text(c) for c in chunks])
+    typer.echo(f"{spec.name}: {len(chunks)} chunks embedded with {embedder.model_id}")
+
+
+@app.command()
 def search(query: str, top_k: int = 5) -> None:
     """Run one query through all three methods."""
     spec = _corpus()
     retrievers = make_retrievers(load_chunks(spec.dir), make_embedder(spec.dir))
     for name, retriever in retrievers.items():
         typer.echo(f"\n== {name}")
-        for h in retriever.search(query, top_k):
+        try:
+            hits = retriever.search(query, top_k)
+        except CacheMissError:
+            typer.echo("query not in embedding cache and OPENAI_API_KEY is not set", err=True)
+            continue
+        for h in hits:
             typer.echo(f"{h.rank}. {h.score:.3f}  {h.chunk.heading[:60]}  [{h.chunk.chunk_id[:8]}]")
 
 
