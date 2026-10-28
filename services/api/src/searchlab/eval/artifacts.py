@@ -33,9 +33,13 @@ def git_state(repo: Path) -> dict[str, Any]:
 def write_scores_csv(scores: Sequence[ScoreRow], path: Path) -> None:
     with path.open("w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["method", "query_class", "n", "recall_at_5", "mrr_at_10"])
+        cols = ["recall_at_1", "recall_at_3", "recall_at_5", "recall_at_10", "mrr_at_10",
+                "ndcg_at_10"]
+        w.writerow(["method", "query_class", "n", *cols, "mrr_ci_low", "mrr_ci_high"])
         for s in scores:
-            w.writerow([s.method, s.query_class, s.n, f"{s.recall_at_5:.4f}", f"{s.mrr_at_10:.4f}"])
+            ci = s.mrr_ci or (float("nan"), float("nan"))
+            w.writerow([s.method, s.query_class, s.n, *(f"{getattr(s, c):.4f}" for c in cols),
+                        f"{ci[0]:.4f}", f"{ci[1]:.4f}"])
 
 
 def write_chart(scores: Sequence[ScoreRow], path: Path, title: str) -> None:

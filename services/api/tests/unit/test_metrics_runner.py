@@ -50,6 +50,10 @@ def test_summary_hand_computed() -> None:
     assert by["all"].mrr_at_10 == pytest.approx((1 + 0.5 + 0) / 3)
     assert by["exact_id"].recall_at_5 == 1.0 and by["exact_id"].n == 2
     assert by["paraphrase"].recall_at_5 == 0.0
+    assert by["all"].recall_at_1 == pytest.approx(1 / 3)
+    assert by["all"].recall_at_3 == pytest.approx(2 / 3)
+    lo, hi = by["all"].mrr_ci or (None, None)
+    assert lo is not None and hi is not None and lo <= by["all"].mrr_at_10 <= hi
 
 
 def test_each_method_scored_on_same_queries() -> None:

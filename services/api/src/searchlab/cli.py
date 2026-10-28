@@ -77,10 +77,12 @@ def _fail(problems: list[str]) -> int:
 
 
 def _print_scores(scores: list[ScoreRow]) -> None:
-    typer.echo(f"{'method':8} {'class':11} {'n':>3} {'recall@5':>9} {'mrr@10':>7}")
+    head = f"{'method':8} {'class':11} {'n':>3} {'R@1':>6} {'R@5':>6} {'MRR@10':>7}  95% CI"
+    typer.echo(head)
     for r in scores:
-        line = f"{r.method:8} {r.query_class:11} {r.n:>3} {r.recall_at_5:>9.3f} {r.mrr_at_10:>7.3f}"
-        typer.echo(line)
+        ci = f"[{r.mrr_ci[0]:.3f}, {r.mrr_ci[1]:.3f}]" if r.mrr_ci else ""
+        typer.echo(f"{r.method:8} {r.query_class:11} {r.n:>3} {r.recall_at_1:>6.3f} "
+                   f"{r.recall_at_5:>6.3f} {r.mrr_at_10:>7.3f}  {ci}")
 
 
 @app.command()
