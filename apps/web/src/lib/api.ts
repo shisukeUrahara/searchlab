@@ -71,6 +71,25 @@ export interface EvalRun {
   scores: ScoreRow[];
   cases: CaseRow[];
 }
+export interface GraphDoc {
+  source_id: string;
+  title: string;
+  doc_number: string;
+}
+export interface GraphNode {
+  id: string;
+  x: number;
+  y: number;
+  doc: number;
+  heading: string;
+  page: number | null;
+}
+export interface GraphData {
+  meta: { layout: string; knn: number; embedding_model: string; chunk_count: number };
+  docs: GraphDoc[];
+  nodes: GraphNode[];
+  edges: [number, number, number][];
+}
 export interface CorpusDoc {
   source_id: string;
   doc_number: string;
@@ -145,6 +164,7 @@ export const api = {
     request<QueryPage>(`/queries?split=${split}&limit=${limit}&offset=${offset}`),
   chunk: (id: string) => request<Chunk>(`/chunks/${encodeURIComponent(id)}`),
   corpus: () => request<Corpus>("/corpus"),
+  graph: () => request<GraphData>("/graph"),
   sources: () => request<{ sources: Source[] }>("/sources"),
   runs: () => request<RunSummary[]>("/eval-runs"),
   run: (id: string) => request<EvalRun>(`/eval-runs/${encodeURIComponent(id)}`),
