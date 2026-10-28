@@ -99,3 +99,10 @@ for (const path of PAGES) {
     });
   }
 }
+
+test("next page right after load is not reset by the text filter", async ({ page }) => {
+  await page.goto("/queries");
+  await page.getByLabel("Next page").click();
+  await page.waitForTimeout(600); // longer than the 250 ms filter debounce
+  await expect(page.getByText(/Showing 16–30 of 80/)).toBeVisible();
+});

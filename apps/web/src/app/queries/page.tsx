@@ -35,12 +35,14 @@ export default function QueriesPage() {
   }, []);
 
   useEffect(() => {
+    const next = text.trim();
+    if (next === q) return; // first render and no-op edits must not reset the page
     const t = setTimeout(() => {
-      setQ(text.trim());
+      setQ(next);
       setOffset(0);
     }, 250);
     return () => clearTimeout(t);
-  }, [text]);
+  }, [text, q]);
 
   const key = `${split}|${cls}|${q}|${offset}`;
   useEffect(() => {
