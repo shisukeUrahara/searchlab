@@ -66,3 +66,18 @@ def chunk_document(source_id: str, title: str, url: str, body: str) -> list[Chun
                 )
             )
     return chunks
+
+
+def pack_lines(text: str, max_chars: int = MAX_CHARS) -> list[str]:
+    """Greedy line packing for PDF text, which has no blank lines between paragraphs."""
+    parts: list[str] = []
+    current = ""
+    for line in text.splitlines():
+        if current and len(current) + len(line) + 1 > max_chars:
+            parts.append(current)
+            current = line
+        else:
+            current = f"{current}\n{line}" if current else line
+    if current:
+        parts.append(current)
+    return parts
