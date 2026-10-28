@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { MetricTable } from "./MetricTable";
+import { KpiCards } from "./eval/KpiCards";
+import { firstRank, rankTone } from "./eval/RankHeatmap";
+import { Pager } from "./Pager";
 import { MethodColumn } from "./search/MethodColumn";
 import { Empty, ErrorBox, Loading } from "./StateViews";
 import { ApiError, type MethodResult, type ScoreRow } from "@/lib/api";
@@ -73,13 +75,40 @@ describe("state views", () => {
   });
 });
 
-describe("MetricTable", () => {
-  it("formats metrics to 3 decimals", () => {
+describe("KpiCards", () => {
+  it("shows MRR with CI, marks the best method and the delta vs BM25", () => {
     const scores: ScoreRow[] = [
-      { method: "hybrid", query_class: "all", n: 30, recall_at_5: 1, mrr_at_10: 0.8561 },
+      { method: "bm25", query_class: "all", n: 80, recall_at_5: 0.9, mrr_at_10: 0.685, mrr_ci: [0.58, 0.79] },
+      { method: "hybrid", query_class: "all", n: 80, recall_at_5: 1, mrr_at_10: 0.875, recall_at_1: 0.775 },
     ];
-    render(<MetricTable scores={scores} />);
-    expect(screen.getByText("1.000")).toBeInTheDocument();
-    expect(screen.getByText("0.856")).toBeInTheDocument();
+    render(<KpiCards scores={scores} />);
+    expect(screen.getByText("0.875")).toBeInTheDocument();
+    expect(screen.getByText("95% CI [0.580, 0.790]")).toBeInTheDocument();
+    expect(screen.getAllByText("Best MRR")).toHaveLength(1);
+    expect(screen.getByText("+0.190 vs BM25")).toBeInTheDocument();
+    expect(screen.getByText("77.5%")).toBeInTheDocument();
+  });
+});
+
+describe("rank helpers", () => {
+  it("finds the first gold rank or null", () => {
+    const base = { query_id: "q", query_class: "x", method: "bm25" as const, hit_at_5: true, reciprocal_rank_at_10: 1 };
+    expect(firstRank({ ...base, ranked_chunk_ids: ["a", "b"], gold_chunk_ids: ["b"] })).toBe(2);
+    expect(firstRank({ ...base, ranked_chunk_ids: ["a"], gold_chunk_ids: ["z"] })).toBeNull();
+  });
+  it("maps ranks to distinct tones", () => {
+    const tones = [1, 2, 4, 7, null].map(rankTone);
+    expect(new Set(tones).size).toBe(5);
+  });
+});
+
+describe("Pager", () => {
+  it("shows range and disables edges", () => {
+    const onChange = vi.fn();
+    render(<Pager total={80} pageSize={15} offset={0} onChange={onChange} noun="queries" />);
+    expect(screen.getByText("Showing 1–15 of 80 queries")).toBeInTheDocument();
+    expect(screen.getByLabelText("Previous page")).toBeDisabled();
+    fireEvent.click(screen.getByLabelText("Next page"));
+    expect(onChange).toHaveBeenCalledWith(15);
   });
 });

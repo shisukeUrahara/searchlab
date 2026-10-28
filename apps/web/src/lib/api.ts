@@ -2,6 +2,17 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000
 
 export type Method = "bm25" | "dense" | "hybrid";
 export const METHODS: Method[] = ["bm25", "dense", "hybrid"];
+export const CLASS_LABEL: Record<string, string> = {
+  all: "All queries",
+  exact_id: "Exact identifier",
+  paraphrase: "Paraphrase",
+  distractor: "Distractor",
+};
+export const METHOD_VAR: Record<Method, string> = {
+  bm25: "var(--m-bm25)",
+  dense: "var(--m-dense)",
+  hybrid: "var(--m-hybrid)",
+};
 export const METHOD_LABEL: Record<Method, string> = {
   bm25: "BM25 (keyword)",
   dense: "Dense (vector)",
@@ -56,6 +67,19 @@ export interface ScoreRow {
   n: number;
   recall_at_5: number;
   mrr_at_10: number;
+  recall_at_1?: number;
+  recall_at_3?: number;
+  recall_at_10?: number;
+  ndcg_at_10?: number;
+  mrr_ci?: [number, number] | null;
+  recall_at_5_ci?: [number, number] | null;
+}
+export interface HeadToHead {
+  a: Method;
+  b: Method;
+  a_better: number;
+  tie: number;
+  b_better: number;
 }
 export interface CaseRow {
   query_id: string;
@@ -67,9 +91,21 @@ export interface CaseRow {
   reciprocal_rank_at_10: number;
 }
 export interface EvalRun {
-  manifest: Record<string, string | number | boolean | string[]>;
+  manifest: Record<string, unknown> & {
+    label: string;
+    split: "dev" | "test";
+    sample_count: number;
+    chunk_count: number;
+    embedding_model: string;
+    rrf_k: number;
+    created_at_utc: string;
+    git_sha?: string;
+    git_dirty?: boolean;
+  };
   scores: ScoreRow[];
   cases: CaseRow[];
+  curves: Partial<Record<Method, number[]>>;
+  head_to_head: HeadToHead[];
 }
 export interface GraphDoc {
   source_id: string;
