@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vector map · SearchLab Retrieval Benchmarking</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            canvas: "#F6F4EF",
+            "canvas-dark": "#0A0F1A",
+            surface: "#FFFFFF",
+            "surface-dark": "#111827",
+            "surface-2": "#EFECE5",
+            "surface-2-dark": "#172033",
+            ink: "#0F1B2D",
+            "ink-dark": "#E6EBF5",
+            muted: "#5B6779",
+            "muted-dark": "#93A0B4",
+            line: "#E3DED4",
+            "line-dark": "#233047",
+            primary: "#2F5BEA",
+            "primary-dark": "#6C8CFF",
+            success: "#0E9F8A",
+            warning: "#C98A1B",
+            danger: "#C2463D",
+            // Retrieval method visual tokens
+            bm25: "#E0782E",
+            dense: "#3B6FF0",
+            hybrid: "#11A38B",
+            // Corpus cluster themes
+            hb1: "#00B4D8", // NPR 7120.5F Electric Cyan
+            hb2: "#F59E0B", // NPR 7123.1D Warm Amber
+            hb3: "#10B981", // SP-2016-6105 Emerald
+            hb4: "#8B5CF6", // NPR 7150.2D Violet
+            hb5: "#F43F5E", // SP-2014-3705 Coral Rose
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "2xl": "1.25rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Geist", "sans-serif"],
+            display: ["Geist", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+            label: ["Public Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Subtle dot grid pattern for high precision map feel */
+    .bg-space-grid {
+      background-size: 32px 32px;
+      background-image: 
+        radial-gradient(circle, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+    }
+
+    /* Glow pulse animations for hits */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.9); opacity: 0.9; }
+      50% { transform: scale(1.3); opacity: 0.4; }
+      100% { transform: scale(0.9); opacity: 0.9; }
+    }
+    .hit-ring {
+      animation: pulse-ring 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      transform-origin: center;
+    }
+    
+    /* Custom scrollbar for data dense panels */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-primary/20 selection:text-ink">
+<!-- =========================================================================
+       TOP NAVIGATION BAR (Strict Shared Component Protocol)
+       ========================================================================= -->
+<header class="bg-surface dark:bg-surface border-b border-line dark:border-line shadow-sm docked full-width top-0 z-40 sticky">
+<div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+<!-- Brand Logo / Product Anchor -->
+<div class="flex items-center gap-8">
+<a class="font-headline font-semibold tracking-tight text-base flex items-center gap-2 text-ink dark:text-ink group" href="#">
+<!-- Abstract Orbit Icon (no official NASA insignia) -->
+<div class="w-7 h-7 rounded-lg bg-ink text-surface flex items-center justify-center relative overflow-hidden transition-transform duration-200 group-hover:scale-105">
+<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" fill="currentColor" r="3"></circle>
+<ellipse cx="12" cy="12" rx="9" ry="4" stroke="currentColor" stroke-dasharray="2 2" transform="rotate(-30 12 12)"></ellipse>
+<circle cx="19" cy="8" fill="#3B6FF0" r="1.5" stroke="none"></circle>
+</svg>
+</div>
+<span class="tracking-tight font-bold">SearchLab</span>
+</a>
+<!-- Desktop Navigation Items -->
+<nav class="hidden md:flex items-center space-x-7 font-headline font-semibold tracking-tight text-sm">
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Search</a>
+<!-- ACTIVE TAB: Vector map -->
+<a class="text-ink dark:text-ink font-semibold border-b-2 border-primary dark:border-primary pb-3.5 pt-4" href="#">Vector map</a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Evaluation</a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Queries</a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Sources</a>
+</nav>
+</div>
+<!-- Trailing Auxiliary Cluster -->
+<div class="flex items-center gap-3">
+<!-- Unofficial Status Pill -->
+<div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-2 border border-line text-xs font-mono text-muted tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-muted/60"></span>
+<span>Unofficial · not affiliated with NASA</span>
+</div>
+<!-- Light/Dark Toggle Button -->
+<button aria-label="Toggle dark mode" class="w-8 h-8 rounded-md flex items-center justify-center text-muted hover:text-ink hover:bg-surface-2 transition-colors duration-150 border border-transparent hover:border-line" id="themeToggleBtn">
+<span class="material-symbols-outlined text-[19px]" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</div>
+</header>
+<!-- =========================================================================
+       SUBHEADER & PROJECTION METRICS BAR
+       ========================================================================= -->
+<section class="border-b border-line bg-surface/80 backdrop-blur-md px-6 py-3.5 z-30">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="font-headline font-semibold text-base text-ink tracking-tight">Embedding Vector Space (UMAP)</h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-primary/10 text-primary border border-primary/20">
+            OpenAI text-embedding-3-large
+          </span>
+</div>
+<p class="text-xs text-muted mt-0.5 font-normal">
+          2D projection of 1,538-dimensional dense embeddings across 3,203 chunks from 5 engineering handbooks.
+        </p>
+</div>
+<!-- Projection Hyperparameters & Technical Chips -->
+<div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-2 border border-line text-muted">
+<span class="text-ink/60">Dimensions:</span>
+<span class="font-semibold text-ink">1538 → 2D</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-2 border border-line text-muted">
+<span class="text-ink/60">Metric:</span>
+<span class="font-semibold text-ink">Cosine</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-2 border border-line text-muted">
+<span class="text-ink/60">Perplexity/Neighbors:</span>
+<span class="font-semibold text-ink">30</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-2 border border-line text-muted">
+<span class="text-ink/60">Min Dist:</span>
+<span class="font-semibold text-ink">0.10</span>
+</div>
+<div class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+<span>Indexed: 100%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- =========================================================================
+       MAIN WORKSPACE: INTERACTIVE VECTOR MAP CONTAINER
+       ========================================================================= -->
+<main class="flex-1 relative w-full overflow-hidden bg-[#0A0F1A] text-slate-200 min-h-[720px] flex">
+<!-- Subtle Technical Background Grid & Coordinate Lines -->
+<div class="absolute inset-0 bg-space-grid pointer-events-none opacity-40"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0A0F1A] via-transparent to-[#0A0F1A]/40 pointer-events-none"></div>
+<!-- Background Coordinate Axes Markings -->
+<div class="absolute left-6 top-6 text-[10px] font-mono text-slate-600 select-none pointer-events-none">
+<div>UMAP: DIM_1 [-18.42, +24.19]</div>
+<div>UMAP: DIM_2 [-14.88, +19.72]</div>
+</div>
+<!-- =======================================================================
+         INTERACTIVE SVG CANVAS: 3,000+ CLUSTERS, EDGES & HIT HALOS
+         ======================================================================= -->
+<div class="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden cursor-crosshair" id="viewportCanvas">
+<svg class="w-full h-full max-w-[1440px] max-h-[960px] select-none" viewbox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Radial glowing gradients for cluster auras -->
+<radialgradient cx="50%" cy="50%" id="aura-cyan" r="50%">
+<stop offset="0%" stop-color="#00B4D8" stop-opacity="0.22"></stop>
+<stop offset="100%" stop-color="#00B4D8" stop-opacity="0"></stop>
+</radialgradient>
+<radialgradient cx="50%" cy="50%" id="aura-amber" r="50%">
+<stop offset="0%" stop-color="#F59E0B" stop-opacity="0.20"></stop>
+<stop offset="100%" stop-color="#F59E0B" stop-opacity="0"></stop>
+</radialgradient>
+<radialgradient cx="50%" cy="50%" id="aura-emerald" r="50%">
+<stop offset="0%" stop-color="#10B981" stop-opacity="0.22"></stop>
+<stop offset="100%" stop-color="#10B981" stop-opacity="0"></stop>
+</radialgradient>
+<radialgradient cx="50%" cy="50%" id="aura-violet" r="50%">
+<stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.20"></stop>
+<stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"></stop>
+</radialgradient>
+<radialgradient cx="50%" cy="50%" id="aura-coral" r="50%">
+<stop offset="0%" stop-color="#F43F5E" stop-opacity="0.18"></stop>
+<stop offset="100%" stop-color="#F43F5E" stop-opacity="0"></stop>
+</radialgradient>
+<!-- Marker & Glow filters -->
+<filter height="140%" id="glow-bright" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="3.5"></fegaussianblur>
+<femerge>
+<femergenode in="blur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<!-- 1. CLUSTER DENSITY CONTOURS & AURA CENTROIDS -->
+<g class="transition-opacity duration-300" id="densityAuras">
+<!-- Cluster 1: NPR 7120.5F (Cyan - Formulation & Governance) Center ~(340, 310) -->
+<ellipse cx="360" cy="300" fill="url(#aura-cyan)" rx="160" ry="120"></ellipse>
+<!-- Cluster 2: NPR 7123.1D (Amber - Systems Eng Processes) Center ~(720, 260) -->
+<ellipse cx="710" cy="270" fill="url(#aura-amber)" rx="170" ry="130"></ellipse>
+<!-- Cluster 3: NASA/SP-2016-6105 (Emerald - SE Handbook) Center ~(540, 520) -->
+<ellipse cx="540" cy="510" fill="url(#aura-emerald)" rx="190" ry="140"></ellipse>
+<!-- Cluster 4: NPR 7150.2D (Violet - Software Requirements) Center ~(270, 560) -->
+<ellipse cx="280" cy="550" fill="url(#aura-violet)" rx="130" ry="110"></ellipse>
+<!-- Cluster 5: NASA/SP-2014-3705 (Coral - Flight Project Mgmt) Center ~(860, 480) -->
+<ellipse cx="850" cy="470" fill="url(#aura-coral)" rx="140" ry="115"></ellipse>
+</g>
+<!-- 2. SEMANTIC EDGES (k-NN Graph links) -->
+<g id="semanticEdges" stroke="#334155" stroke-opacity="0.32" stroke-width="0.75">
+<!-- NPR 7120.5F dense linkages -->
+<line x1="330" x2="360" y1="280" y2="300"></line>
+<line x1="360" x2="390" y1="300" y2="330"></line>
+<line x1="390" x2="430" y1="330" y2="290"></line>
+<line x1="360" x2="330" y1="300" y2="340"></line>
+<line x1="310" x2="350" y1="260" y2="250"></line>
+<line x1="350" x2="380" y1="250" y2="280"></line>
+<line x1="380" x2="420" y1="280" y2="270"></line>
+<line x1="420" x2="460" y1="270" y2="310"></line>
+<!-- Bridge connections between 7120.5F (Management) and 7123.1D (SE) -->
+<line stroke="#475569" stroke-dasharray="2,2" x1="460" x2="520" y1="310" y2="330"></line>
+<line stroke="#475569" stroke-dasharray="2,2" x1="520" x2="580" y1="330" y2="310"></line>
+<line x1="580" x2="650" y1="310" y2="280"></line>
+<!-- NPR 7123.1D linkages -->
+<line x1="650" x2="700" y1="280" y2="260"></line>
+<line x1="700" x2="740" y1="260" y2="240"></line>
+<line x1="740" x2="780" y1="240" y2="270"></line>
+<line x1="700" x2="720" y1="260" y2="300"></line>
+<line x1="720" x2="680" y1="300" y2="330"></line>
+<line x1="680" x2="750" y1="330" y2="330"></line>
+<!-- Systems Eng Handbook 6105 (Emerald) interlinks -->
+<line x1="500" x2="540" y1="460" y2="500"></line>
+<line x1="540" x2="580" y1="500" y2="480"></line>
+<line x1="580" x2="610" y1="480" y2="530"></line>
+<line x1="540" x2="520" y1="500" y2="550"></line>
+<line x1="520" x2="480" y1="550" y2="520"></line>
+<line x1="480" x2="500" y1="520" y2="460"></line>
+<!-- Software Eng (Violet) links -->
+<line x1="240" x2="280" y1="520" y2="540"></line>
+<line x1="280" x2="310" y1="540" y2="570"></line>
+<line x1="280" x2="260" y1="540" y2="580"></line>
+<line x1="260" x2="220" y1="580" y2="560"></line>
+<!-- Space Flight Management (Coral) links -->
+<line x1="820" x2="860" y1="440" y2="470"></line>
+<line x1="860" x2="890" y1="470" y2="450"></line>
+<line x1="860" x2="850" y1="470" y2="510"></line>
+<line x1="850" x2="880" y1="510" y2="530"></line>
+</g>
+<!-- 3. CLUSTERS OF EMBEDDING NODES (Simulating 3,203 points with layered visual density) -->
+<g id="clusterNodes">
+<!-- CLUSTER 1: NPR 7120.5F (Cyan) -->
+<g fill="#00B4D8" fill-opacity="0.75">
+<circle cx="360" cy="300" r="2.8"></circle>
+<circle cx="345" cy="285" r="2.2"></circle>
+<circle cx="375" cy="315" r="2.5"></circle>
+<circle cx="330" cy="310" r="2"></circle>
+<circle cx="390" cy="290" r="2.4"></circle>
+<circle cx="410" cy="325" r="2"></circle>
+<circle cx="320" cy="270" r="1.8"></circle>
+<circle cx="380" cy="260" r="2.2"></circle>
+<circle cx="430" cy="285" r="2.6"></circle>
+<circle cx="350" cy="340" r="2"></circle>
+<circle cx="300" cy="295" r="1.9"></circle>
+<circle cx="420" cy="350" r="2.1"></circle>
+<circle cx="370" cy="365" r="1.8"></circle>
+<circle cx="280" cy="315" r="2.3"></circle>
+<circle cx="445" cy="310" r="2"></circle>
+<circle cx="395" cy="240" r="1.8"></circle>
+<circle cx="315" cy="335" r="2.2"></circle>
+<circle cx="360" cy="225" r="1.7"></circle>
+<circle cx="450" cy="260" r="2.2"></circle>
+<circle cx="335" cy="245" r="2.5"></circle>
+<!-- High density micro-dots -->
+<circle cx="355" cy="292" opacity="0.6" r="1.4"></circle>
+<circle cx="368" cy="305" opacity="0.6" r="1.5"></circle>
+<circle cx="342" cy="312" opacity="0.6" r="1.4"></circle>
+<circle cx="382" cy="298" opacity="0.6" r="1.5"></circle>
+<circle cx="325" cy="290" opacity="0.6" r="1.3"></circle>
+<circle cx="400" cy="310" opacity="0.6" r="1.4"></circle>
+<circle cx="372" cy="275" opacity="0.6" r="1.3"></circle>
+<circle cx="348" cy="268" opacity="0.6" r="1.5"></circle>
+<circle cx="415" cy="295" opacity="0.6" r="1.3"></circle>
+<circle cx="390" cy="335" opacity="0.6" r="1.4"></circle>
+</g>
+<!-- CLUSTER 2: NPR 7123.1D (Warm Amber) -->
+<g fill="#F59E0B" fill-opacity="0.75">
+<circle cx="710" cy="265" r="2.8"></circle>
+<circle cx="690" cy="245" r="2.2"></circle>
+<circle cx="730" cy="280" r="2.6"></circle>
+<circle cx="675" cy="275" r="2"></circle>
+<circle cx="745" cy="250" r="2.3"></circle>
+<circle cx="765" cy="290" r="2.1"></circle>
+<circle cx="660" cy="235" r="1.9"></circle>
+<circle cx="725" cy="225" r="2.4"></circle>
+<circle cx="785" cy="265" r="2.5"></circle>
+<circle cx="695" cy="305" r="2"></circle>
+<circle cx="645" cy="260" r="1.8"></circle>
+<circle cx="770" cy="320" r="2.2"></circle>
+<circle cx="720" cy="335" r="1.9"></circle>
+<circle cx="630" cy="285" r="2.2"></circle>
+<circle cx="795" cy="295" r="2"></circle>
+<circle cx="740" cy="210" r="1.7"></circle>
+<circle cx="670" cy="315" r="2.1"></circle>
+<circle cx="705" cy="195" r="1.8"></circle>
+<circle cx="805" cy="240" r="2"></circle>
+<circle cx="685" cy="215" r="2.3"></circle>
+<!-- Micro-dots -->
+<circle cx="702" cy="258" opacity="0.6" r="1.4"></circle>
+<circle cx="718" cy="272" opacity="0.6" r="1.5"></circle>
+<circle cx="692" cy="282" opacity="0.6" r="1.4"></circle>
+<circle cx="732" cy="262" opacity="0.6" r="1.5"></circle>
+<circle cx="680" cy="252" opacity="0.6" r="1.3"></circle>
+<circle cx="750" cy="275" opacity="0.6" r="1.4"></circle>
+</g>
+<!-- CLUSTER 3: NASA/SP-2016-6105 (Emerald) -->
+<g fill="#10B981" fill-opacity="0.75">
+<circle cx="540" cy="510" r="2.9"></circle>
+<circle cx="520" cy="485" r="2.3"></circle>
+<circle cx="565" cy="530" r="2.5"></circle>
+<circle cx="505" cy="525" r="2.1"></circle>
+<circle cx="580" cy="495" r="2.4"></circle>
+<circle cx="595" cy="540" r="2"></circle>
+<circle cx="490" cy="470" r="1.9"></circle>
+<circle cx="555" cy="460" r="2.2"></circle>
+<circle cx="615" cy="510" r="2.6"></circle>
+<circle cx="530" cy="555" r="2"></circle>
+<circle cx="470" cy="505" r="1.8"></circle>
+<circle cx="600" cy="570" r="2.1"></circle>
+<circle cx="550" cy="585" r="1.9"></circle>
+<circle cx="460" cy="535" r="2.3"></circle>
+<circle cx="625" cy="545" r="2"></circle>
+<circle cx="570" cy="445" r="1.7"></circle>
+<circle cx="500" cy="565" r="2.2"></circle>
+<circle cx="535" cy="430" r="1.8"></circle>
+<circle cx="635" cy="485" r="2.1"></circle>
+<circle cx="515" cy="450" r="2.4"></circle>
+<!-- Micro-dots -->
+<circle cx="532" cy="502" opacity="0.6" r="1.5"></circle>
+<circle cx="548" cy="518" opacity="0.6" r="1.4"></circle>
+<circle cx="522" cy="528" opacity="0.6" r="1.5"></circle>
+<circle cx="562" cy="508" opacity="0.6" r="1.4"></circle>
+<circle cx="510" cy="498" opacity="0.6" r="1.3"></circle>
+<circle cx="580" cy="520" opacity="0.6" r="1.4"></circle>
+</g>
+<!-- CLUSTER 4: NPR 7150.2D (Violet) -->
+<g fill="#8B5CF6" fill-opacity="0.75">
+<circle cx="280" cy="550" r="2.8"></circle>
+<circle cx="260" cy="530" r="2.2"></circle>
+<circle cx="300" cy="570" r="2.4"></circle>
+<circle cx="245" cy="560" r="2"></circle>
+<circle cx="310" cy="535" r="2.3"></circle>
+<circle cx="325" cy="580" r="1.9"></circle>
+<circle cx="230" cy="515" r="1.8"></circle>
+<circle cx="295" cy="505" r="2.1"></circle>
+<circle cx="345" cy="550" r="2.5"></circle>
+<circle cx="270" cy="595" r="2"></circle>
+<circle cx="215" cy="545" r="1.9"></circle>
+<circle cx="330" cy="610" r="2"></circle>
+<!-- Micro-dots -->
+<circle cx="275" cy="542" opacity="0.6" r="1.4"></circle>
+<circle cx="288" cy="558" opacity="0.6" r="1.5"></circle>
+<circle cx="262" cy="568" opacity="0.6" r="1.3"></circle>
+</g>
+<!-- CLUSTER 5: NASA/SP-2014-3705 (Coral) -->
+<g fill="#F43F5E" fill-opacity="0.75">
+<circle cx="850" cy="470" r="2.8"></circle>
+<circle cx="830" cy="450" r="2.1"></circle>
+<circle cx="875" cy="490" r="2.5"></circle>
+<circle cx="815" cy="480" r="1.9"></circle>
+<circle cx="885" cy="455" r="2.3"></circle>
+<circle cx="905" cy="500" r="2.1"></circle>
+<circle cx="800" cy="435" r="1.8"></circle>
+<circle cx="865" cy="425" r="2.3"></circle>
+<circle cx="925" cy="470" r="2.4"></circle>
+<circle cx="840" cy="515" r="2"></circle>
+<!-- Micro-dots -->
+<circle cx="845" cy="462" opacity="0.6" r="1.4"></circle>
+<circle cx="858" cy="478" opacity="0.6" r="1.5"></circle>
+<circle cx="832" cy="488" opacity="0.6" r="1.3"></circle>
+</g>
+</g>
+<!-- 4. SOFT EDITORIAL CLUSTER LABELS ANNOTATED ON MAP -->
+<g class="font-headline font-semibold text-[11px] tracking-wide pointer-events-none select-none">
+<text fill="#00B4D8" opacity="0.85" text-anchor="middle" x="360" y="200">GATE REVIEWS &amp; FORMULATION (7120.5F)</text>
+<text fill="#F59E0B" opacity="0.85" text-anchor="middle" x="730" y="175">SYSTEMS ENGINEERING LIFECYCLE (7123.1D)</text>
+<text fill="#10B981" opacity="0.85" text-anchor="middle" x="540" y="620">TECHNICAL DESIGN PROCESSES (SP-6105)</text>
+<text fill="#8B5CF6" opacity="0.85" text-anchor="middle" x="260" y="635">SOFTWARE SAFETY &amp; VERIFICATION (7150.2D)</text>
+<text fill="#F43F5E" opacity="0.85" text-anchor="middle" x="870" y="555">COST &amp; SCHEDULE BASELINE (SP-3705)</text>
+</g>
+<!-- 5. BENCHMARK QUERY HIT HIGHLIGHTS FOR:
+             "Key Decision Point C review exit criteria"
+             BM25 (Orange #E0782E), Dense (Blue #3B6FF0), Hybrid RRF (Teal/Green #11A38B) -->
+<g id="queryHitHighlights">
+<!-- HIT A (CHUNK-1842): The Primary Target Node (Hybrid Rank #1) in NPR 7120.5F @ (360, 300) -->
+<!-- Multi-method intersection: Dense + BM25 + Hybrid RRF -->
+<g class="cursor-pointer group" id="targetNode">
+<!-- Pulsing outer halo -->
+<circle class="hit-ring" cx="360" cy="300" fill="none" r="22" stroke="#11A38B" stroke-width="1.5"></circle>
+<!-- Dense blue ring -->
+<circle cx="360" cy="300" fill="none" r="14" stroke="#3B6FF0" stroke-dasharray="3,1" stroke-width="2"></circle>
+<!-- BM25 orange inner aura -->
+<circle cx="360" cy="300" fill="none" r="8" stroke="#E0782E" stroke-width="2"></circle>
+<!-- Core solid glowing node -->
+<circle cx="360" cy="300" fill="#FFFFFF" filter="url(#glow-bright)" r="5"></circle>
+<!-- Label tag line -->
+<line opacity="0.8" stroke="#FFFFFF" stroke-dasharray="2,2" stroke-width="1" x1="360" x2="395" y1="300" y2="245"></line>
+</g>
+<!-- HIT B: Dense Hit in NPR 7123.1D § 3.2 Gate Reviews @ (690, 245) -->
+<g>
+<circle class="hit-ring" cx="690" cy="245" fill="none" r="16" stroke="#3B6FF0" stroke-width="2"></circle>
+<circle cx="690" cy="245" fill="#3B6FF0" filter="url(#glow-bright)" r="5"></circle>
+<text fill="#93A0B4" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="690" y="225">Dense #4</text>
+</g>
+<!-- HIT C: BM25 Lexical Hit (Keyword match "Exit Criteria") in SP-2016-6105 @ (520, 485) -->
+<g>
+<circle class="hit-ring" cx="520" cy="485" fill="none" r="15" stroke="#E0782E" stroke-width="2"></circle>
+<circle cx="520" cy="485" fill="#E0782E" r="4.5"></circle>
+<text fill="#93A0B4" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="520" y="465">BM25 #2</text>
+</g>
+<!-- HIT D: Hybrid Hit in NPR 7120.5F § 2.2 Control Gates @ (430, 285) -->
+<g>
+<circle cx="430" cy="285" fill="none" r="14" stroke="#11A38B" stroke-width="1.8"></circle>
+<circle cx="430" cy="285" fill="#11A38B" r="4.5"></circle>
+<text fill="#93A0B4" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="430" y="268">Hybrid #3</text>
+</g>
+<!-- HIT E: BM25 Hit in NASA/SP-2014-3705 @ (830, 450) -->
+<g>
+<circle cx="830" cy="450" fill="none" r="12" stroke="#E0782E" stroke-dasharray="2,2" stroke-width="1.5"></circle>
+<circle cx="830" cy="450" fill="#E0782E" r="4"></circle>
+</g>
+</g>
+</svg>
+</div>
+<!-- =======================================================================
+         PINNED HOVER TOOLTIP / INSPECT CALLOUT (Pinned to Node #CHUNK-1842)
+         ======================================================================= -->
+<div class="absolute left-[34%] top-[19%] z-20 pointer-events-auto transform -translate-x-1/2 -translate-y-full mb-3 animate-fade-in">
+<div class="w-80 rounded-xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl p-4 text-xs font-body text-slate-200">
+<!-- Header Pill & Rank Chip -->
+<div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+<span class="font-mono text-[11px] font-semibold text-cyan-300">NPR 7120.5F § 2.1.4 · P.64</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30">
+            Hybrid Rank #1
+          </span>
+</div>
+<!-- Title -->
+<h4 class="font-headline font-semibold text-sm text-white mb-2 leading-snug">
+          2.1 Program Milestones &gt; 2.1.4 Key Decision Point C (KDP C)
+        </h4>
+<!-- Excerpt Preview -->
+<p class="text-slate-400 text-[11px] line-clamp-2 mb-3 leading-relaxed">
+          "Mandatory KDP C review exit criteria include finalization of the Project Baseline Agreement (PBA), preliminary safety compliance, and cost confidence levels..."
+        </p>
+<!-- Benchmark Retrieval Scores Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 font-mono text-[10px]">
+<div class="bg-slate-800/60 rounded px-2 py-1.5 flex items-center justify-between border border-slate-700/50">
+<span class="text-slate-400 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#3B6FF0]"></span>Dense Sim:
+            </span>
+<span class="text-white font-semibold">0.841</span>
+</div>
+<div class="bg-slate-800/60 rounded px-2 py-1.5 flex items-center justify-between border border-slate-700/50">
+<span class="text-slate-400 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-[#E0782E]"></span>BM25 Score:
+            </span>
+<span class="text-white font-semibold">12.45</span>
+</div>
+</div>
+<!-- Pointer Arrow -->
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900"></div>
+</div>
+</div>
+<!-- =======================================================================
+         LEFT FLOATING GLASSMORPHISM CONTROL PANEL
+         ======================================================================= -->
+<aside class="absolute left-6 top-6 bottom-16 w-80 z-20 flex flex-col gap-3 pointer-events-none">
+<div class="pointer-events-auto bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-full">
+<!-- Header -->
+<div class="p-4 border-b border-slate-800 flex items-center justify-between">
+<div>
+<h2 class="font-headline font-semibold text-sm text-white tracking-tight">Vector Controls</h2>
+<div class="text-[11px] font-mono text-slate-400 mt-0.5">3,203 chunks · 11,453 links</div>
+</div>
+<button class="text-slate-400 hover:text-white transition-colors" title="Reset Filters">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+</button>
+</div>
+<!-- Scrollable Controls Body -->
+<div class="p-4 space-y-5 overflow-y-auto flex-1 text-xs">
+<!-- Search Benchmark Query Input -->
+<div>
+<label class="block font-headline font-medium text-[11px] text-slate-300 mb-1.5">
+              Highlight Query Hits
+            </label>
+<div class="relative">
+<input class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body" placeholder="Type query to project hits..." type="text" value="Key Decision Point C exit criteria"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 text-slate-400 text-[16px] pointer-events-none">
+                search
+              </span>
+</div>
+<!-- Preset Benchmark Chips -->
+<div class="flex flex-wrap gap-1.5 mt-2">
+<span class="text-[10px] text-slate-400 self-center mr-0.5">Presets:</span>
+<button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] transition-colors">
+                KDP Reviews
+              </button>
+<button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] transition-colors">
+                Software Class A
+              </button>
+<button class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] transition-colors">
+                Risk Matrix
+              </button>
+</div>
+</div>
+<!-- Retrieval Channel Hit Toggles -->
+<div class="pt-2 border-t border-slate-800/80">
+<div class="font-headline font-medium text-[11px] text-slate-300 mb-2.5 flex items-center justify-between">
+<span>Retrieval Channel Halos</span>
+<span class="font-mono text-[10px] text-slate-500">top 10 per method</span>
+</div>
+<div class="space-y-2">
+<!-- BM25 Checkbox -->
+<label class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<input checked="" class="rounded border-slate-700 bg-slate-800 text-[#E0782E] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="text-slate-300 text-xs">BM25 Hits</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full border-2 border-[#E0782E] bg-transparent"></span>
+<span class="font-mono text-[10px] text-slate-400">10 / 10</span>
+</div>
+</label>
+<!-- Dense Checkbox -->
+<label class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<input checked="" class="rounded border-slate-700 bg-slate-800 text-[#3B6FF0] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="text-slate-300 text-xs">Dense Hits (OpenAI)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full border-2 border-[#3B6FF0] bg-transparent"></span>
+<span class="font-mono text-[10px] text-slate-400">10 / 10</span>
+</div>
+</label>
+<!-- Hybrid RRF Checkbox -->
+<label class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-800 hover:border-slate-700 cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<input checked="" class="rounded border-slate-700 bg-slate-800 text-[#11A38B] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<span class="text-slate-300 text-xs">Hybrid RRF Fusion</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full border-2 border-[#11A38B] bg-transparent"></span>
+<span class="font-mono text-[10px] text-slate-400">10 / 10</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Display Switches & Sliders -->
+<div class="pt-2 border-t border-slate-800/80 space-y-3">
+<div class="font-headline font-medium text-[11px] text-slate-300">Display Options</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-400 text-xs">k-NN Semantic Edges</span>
+<input checked="" class="rounded border-slate-700 bg-slate-800 text-primary focus:ring-0" type="checkbox"/>
+</div>
+<!-- Edge Opacity Slider -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-mono text-slate-400">
+<span>Edge Opacity</span>
+<span>35%</span>
+</div>
+<input class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary" max="100" min="0" type="range" value="35"/>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-400 text-xs">Density Contours</span>
+<input checked="" class="rounded border-slate-700 bg-slate-800 text-primary focus:ring-0" type="checkbox"/>
+</div>
+<!-- Color By Dropdown -->
+<div class="pt-1">
+<label class="block text-[10px] font-mono text-slate-400 mb-1">Color Palette By</label>
+<select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none">
+<option selected="">Source Document (5 Handbooks)</option>
+<option>Token Length Distribution</option>
+<option>Semantic Density (K-Means)</option>
+</select>
+</div>
+</div>
+<!-- Handbook Legend & Visible Layers -->
+<div class="pt-2 border-t border-slate-800/80">
+<div class="font-headline font-medium text-[11px] text-slate-300 mb-2 flex items-center justify-between">
+<span>Handbooks Corpus (5)</span>
+<span class="font-mono text-[10px] text-slate-500">chunks</span>
+</div>
+<div class="space-y-1.5 font-mono text-[11px]">
+<!-- 1. NPR 7120.5F -->
+<label class="flex items-center justify-between text-slate-300 hover:text-white cursor-pointer py-0.5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#00B4D8]"></span>
+<span class="font-sans text-xs">NPR 7120.5F (P&amp;PM)</span>
+</div>
+<span class="text-slate-500">642</span>
+</label>
+<!-- 2. NPR 7123.1D -->
+<label class="flex items-center justify-between text-slate-300 hover:text-white cursor-pointer py-0.5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
+<span class="font-sans text-xs">NPR 7123.1D (Sys Eng)</span>
+</div>
+<span class="text-slate-500">718</span>
+</label>
+<!-- 3. NASA/SP-2016-6105 -->
+<label class="flex items-center justify-between text-slate-300 hover:text-white cursor-pointer py-0.5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+<span class="font-sans text-xs">NASA/SP-6105 (SE Hb)</span>
+</div>
+<span class="text-slate-500">984</span>
+</label>
+<!-- 4. NPR 7150.2D -->
+<label class="flex items-center justify-between text-slate-300 hover:text-white cursor-pointer py-0.5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]"></span>
+<span class="font-sans text-xs">NPR 7150.2D (Software)</span>
+</div>
+<span class="text-slate-500">420</span>
+</label>
+<!-- 5. NASA/SP-2014-3705 -->
+<label class="flex items-center justify-between text-slate-300 hover:text-white cursor-pointer py-0.5">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F43F5E]"></span>
+<span class="font-sans text-xs">NASA/SP-3705 (Flight)</span>
+</div>
+<span class="text-slate-500">439</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Footer status in panel -->
+<div class="p-3 bg-slate-950/60 border-t border-slate-800 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+<span>Projection: UMAP-2D</span>
+<span class="text-emerald-400">Converged (500 iters)</span>
+</div>
+</div>
+</aside>
+<!-- =======================================================================
+         RIGHT DRAWER / CHUNK INSPECTOR PANEL
+         ======================================================================= -->
+<aside class="absolute right-6 top-6 bottom-16 w-96 z-20 flex flex-col pointer-events-none">
+<div class="pointer-events-auto bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex flex-col h-full overflow-hidden">
+<!-- Inspector Header -->
+<div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">find_in_page</span>
+<div>
+<h3 class="font-headline font-semibold text-sm text-white">Chunk Inspector</h3>
+<div class="text-[11px] font-mono text-slate-400">#CHUNK-1842</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors" title="Copy Chunk ID">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors" title="Close Panel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<!-- Inspector Content Body -->
+<div class="p-4 flex-1 overflow-y-auto space-y-4 text-xs font-body">
+<!-- Document Pill & Citation Link -->
+<div class="rounded-lg bg-slate-800/60 border border-slate-700/60 p-3 space-y-2">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-cyan-950/80 text-cyan-300 border border-cyan-800/60">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                NPR 7120.5F
+              </span>
+<a class="text-[11px] font-mono text-primary-dark hover:underline flex items-center gap-1" href="#">
+                Open PDF page 64 <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+</a>
+</div>
+<div class="text-[11px] text-slate-300 font-medium">
+              NASA Program and Project Management Processes and Requirements
+            </div>
+</div>
+<!-- Metadata Grid Chips -->
+<div class="grid grid-cols-3 gap-2 font-mono text-[10px]">
+<div class="bg-slate-800/40 border border-slate-800 rounded p-2 text-center">
+<div class="text-slate-400">Section</div>
+<div class="text-white font-semibold mt-0.5">§ 2.1.4</div>
+</div>
+<div class="bg-slate-800/40 border border-slate-800 rounded p-2 text-center">
+<div class="text-slate-400">Tokens</div>
+<div class="text-white font-semibold mt-0.5">512</div>
+</div>
+<div class="bg-slate-800/40 border border-slate-800 rounded p-2 text-center">
+<div class="text-slate-400">Dense Rank</div>
+<div class="text-primary-dark font-semibold mt-0.5">#2</div>
+</div>
+</div>
+<!-- Technical Content Text Box -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-headline font-semibold text-[11px] text-slate-300">Chunk Raw Text</span>
+<span class="font-mono text-[10px] text-slate-500">chunk_id: 1842</span>
+</div>
+<div class="rounded-lg bg-slate-950 border border-slate-800 p-3.5 text-slate-300 font-mono text-[11px] leading-relaxed select-text space-y-2 max-h-56 overflow-y-auto">
+<p>
+<strong class="text-cyan-300">2.1.4 Key Decision Point C (KDP C) Review Exit Criteria.</strong> Formal KDP C exit criteria for Class B payloads include mandatory project baseline agreements (PBA), integrated cost and schedule management plans, preliminary safety validation matrices, and operational envelope boundaries.
+              </p>
+<p>
+                Required approval from the Convening Authority must occur prior to Phase C detailed design release. The Project Manager shall demonstrate that unallocated future expenses (UFE) and schedule reserve satisfy the 70% joint cost and schedule confidence level (JCL) requirements defined in paragraph 2.4.3.
+              </p>
+</div>
+</div>
+<!-- Retrieval Performance Breakdown -->
+<div>
+<span class="font-headline font-semibold text-[11px] text-slate-300 mb-2 block">Benchmark Alignment Scores</span>
+<div class="space-y-2 font-mono text-[11px]">
+<div>
+<div class="flex justify-between text-slate-300 mb-1">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#11A38B]"></span>Hybrid RRF Score</span>
+<span class="text-emerald-400 font-bold">0.0328 (Rank #1)</span>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-teal-500 to-emerald-400 h-full rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-slate-300 mb-1">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#3B6FF0]"></span>Dense Cosine Similarity</span>
+<span class="text-blue-400">0.841</span>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-blue-500 h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-slate-300 mb-1">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#E0782E]"></span>BM25 Term Match</span>
+<span class="text-amber-400">12.45 pts</span>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full" style="width: 72%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Nearest Semantic Neighbors in 1538D Space -->
+<div class="pt-2 border-t border-slate-800">
+<span class="font-headline font-semibold text-[11px] text-slate-300 mb-2 block">Nearest Semantic Neighbors (k-NN)</span>
+<div class="space-y-1.5 font-mono text-[10px]">
+<!-- Neighbor 1 -->
+<div class="p-2 rounded bg-slate-800/40 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer group">
+<div>
+<div class="text-slate-200 group-hover:text-cyan-300 transition-colors font-medium">NPR 7123.1D § 4.1.2</div>
+<div class="text-slate-400 text-[9px] font-sans">Technical Review Entrance &amp; Exit Criteria</div>
+</div>
+<div class="text-right">
+<div class="text-slate-300 font-semibold">0.912</div>
+<div class="text-slate-500 text-[9px]">sim</div>
+</div>
+</div>
+<!-- Neighbor 2 -->
+<div class="p-2 rounded bg-slate-800/40 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer group">
+<div>
+<div class="text-slate-200 group-hover:text-emerald-300 transition-colors font-medium">SP-2016-6105 § 3.3</div>
+<div class="text-slate-400 text-[9px] font-sans">Preliminary Design Review (PDR) Process</div>
+</div>
+<div class="text-right">
+<div class="text-slate-300 font-semibold">0.887</div>
+<div class="text-slate-500 text-[9px]">sim</div>
+</div>
+</div>
+<!-- Neighbor 3 -->
+<div class="p-2 rounded bg-slate-800/40 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer group">
+<div>
+<div class="text-slate-200 group-hover:text-cyan-300 transition-colors font-medium">NPR 7120.5F § 2.2.1</div>
+<div class="text-slate-400 text-[9px] font-sans">Formulation Phase Reviews &amp; Gates</div>
+</div>
+<div class="text-right">
+<div class="text-slate-300 font-semibold">0.865</div>
+<div class="text-slate-500 text-[9px]">sim</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-3 bg-slate-950/60 border-t border-slate-800 flex items-center gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary hover:bg-blue-600 text-white font-medium text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">compare_arrows</span>
+            Benchmark this Chunk
+          </button>
+</div>
+</div>
+</aside>
+<!-- =======================================================================
+         BOTTOM FOOTNOTE & VIEWPORT TOOLBAR
+         ======================================================================= -->
+<div class="absolute bottom-4 left-6 right-6 z-20 flex items-end justify-between pointer-events-none">
+<!-- Layout Mathematical Footnote -->
+<div class="pointer-events-auto bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-lg px-3 py-1.5 text-[11px] font-mono text-slate-400 flex items-center gap-2 shadow-lg">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+<span>Layout: UMAP (cosine metric, n_neighbors=30, min_dist=0.10, seed=42). Distances are approximate 2D projections.</span>
+</div>
+<!-- Viewport Navigation Floating Toolbar -->
+<div class="pointer-events-auto flex items-center gap-2">
+<!-- Minimap Radar Thumbnail -->
+<div class="hidden sm:block w-24 h-16 rounded-lg bg-slate-900/90 border border-slate-700/80 p-1 relative shadow-xl backdrop-blur-md overflow-hidden" title="Minimap Overview">
+<div class="w-full h-full relative opacity-50">
+<!-- Simulated miniature blobs -->
+<div class="absolute w-4 h-3 bg-cyan-400 rounded-full left-3 top-2"></div>
+<div class="absolute w-5 h-3 bg-amber-400 rounded-full right-4 top-2"></div>
+<div class="absolute w-6 h-4 bg-emerald-400 rounded-full left-8 bottom-1"></div>
+<div class="absolute w-3 h-3 bg-purple-400 rounded-full left-2 bottom-2"></div>
+<!-- Viewport indicator rect -->
+<div class="absolute inset-1.5 border border-primary-dark/80 bg-primary/10 rounded-sm"></div>
+</div>
+</div>
+<!-- Zoom / Reset Controls Cluster -->
+<div class="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-lg p-1 flex items-center gap-0.5 shadow-xl">
+<button class="w-8 h-8 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<div class="w-px h-4 bg-slate-800 mx-0.5"></div>
+<button class="w-8 h-8 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Reset Viewport">
+<span class="material-symbols-outlined text-[18px]">filter_center_focus</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Fullscreen">
+<span class="material-symbols-outlined text-[18px]">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interactions Script -->
+<script>
+    // Theme toggle interaction mock
+    const themeBtn = document.getElementById('themeToggleBtn');
+    themeBtn?.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+
+    // Node click/hover interaction toggle demo
+    const targetNode = document.getElementById('targetNode');
+    targetNode?.addEventListener('mouseenter', () => {
+      targetNode.style.cursor = 'pointer';
+    });
+  </script>
+</body></html>

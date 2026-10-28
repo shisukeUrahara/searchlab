@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SearchLab · Labeled Queries</title>
+<!-- Typography: Geist, Inter, JetBrains Mono, Public Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            canvas: "#F6F4EF",
+            surface: "#FFFFFF",
+            "surface-2": "#EFECE5",
+            ink: "#0F1B2D",
+            muted: "#5B6779",
+            line: "#E3DED4",
+            primary: "#2F5BEA",
+            success: "#0E9F8A",
+            warning: "#C98A1B",
+            danger: "#C2463D",
+            bm25: "#E0782E",
+            dense: "#3B6FF0",
+            hybrid: "#11A38B"
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Geist", "sans-serif"],
+            display: ["Geist", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F6F4EF;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8D2C5;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body antialiased min-h-screen flex flex-col selection:bg-primary/10 selection:text-primary">
+<!-- TopNavBar (Shared Component Anchor) -->
+<header class="bg-surface border-b border-line shadow-sm sticky top-0 z-40">
+<div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+<!-- Brand & Left Navigation Links -->
+<div class="flex items-center gap-8">
+<!-- Brand Logo: Geometric Abstract Orbit (Strictly no NASA insignia) -->
+<a class="font-headline font-semibold tracking-tight text-base flex items-center gap-2.5 text-ink hover:opacity-90 transition-opacity" href="#">
+<svg class="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" fill="currentColor" fill-opacity="0.2" r="3"></circle>
+<ellipse cx="12" cy="12" rx="10" ry="4.5" stroke-dasharray="1 2" transform="rotate(-30 12 12)"></ellipse>
+<ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(30 12 12)"></ellipse>
+</svg>
+<span class="tracking-tight font-bold">SearchLab</span>
+</a>
+<!-- Desktop Navigation Cluster -->
+<nav class="hidden md:flex items-center gap-6 font-headline text-sm font-semibold tracking-tight h-14">
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Search</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Vector map</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Evaluation</a>
+<!-- Queries is ACTIVE -->
+<a class="text-ink font-semibold border-b-2 border-primary pb-3.5 pt-4" href="#">Queries</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">Sources</a>
+</nav>
+</div>
+<!-- Trailing Secondary Actions -->
+<div class="flex items-center gap-3">
+<!-- Unofficial Badge Pill -->
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-label font-medium text-muted bg-surface-2 rounded-full border border-line">
+<span class="w-1.5 h-1.5 rounded-full bg-muted/60"></span>
+          Unofficial · not affiliated with NASA
+        </span>
+<!-- Theme Toggle Button -->
+<button aria-label="Toggle theme" class="p-1.5 text-muted hover:text-ink hover:bg-surface-2 rounded-md transition-colors duration-150 flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-6 py-7 flex flex-col gap-6">
+<!-- Page Title & Header Banner -->
+<div class="flex flex-col gap-4">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1.5">
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium tracking-wide uppercase bg-primary/10 text-primary border border-primary/20">Ground Truth v1.4</span>
+<span class="text-xs text-muted font-label">Frozen benchmark baseline</span>
+</div>
+<h1 class="text-2xl font-headline font-bold text-ink tracking-tight">Labeled queries</h1>
+<p class="text-sm text-muted mt-1 max-w-3xl leading-relaxed">
+            Curated benchmark query suite paired with canonical passage annotations across NASA procedural requirements and systems engineering handbooks.
+          </p>
+</div>
+<!-- Quick Stats Pills Cluster -->
+<div class="flex flex-wrap items-center gap-2">
+<div class="px-3 py-1.5 rounded-lg bg-surface border border-line flex items-center gap-2 shadow-sm">
+<span class="text-xs text-muted font-medium font-label">Total queries:</span>
+<span class="font-mono text-xs font-semibold text-ink">120</span>
+</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface border border-line flex items-center gap-2 shadow-sm">
+<span class="text-xs text-muted font-medium font-label">Holdout:</span>
+<span class="font-mono text-xs font-semibold text-primary">80</span>
+</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface border border-line flex items-center gap-2 shadow-sm">
+<span class="text-xs text-muted font-medium font-label">Tuning:</span>
+<span class="font-mono text-xs font-semibold text-muted">40</span>
+</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface border border-line flex items-center gap-2 shadow-sm">
+<span class="text-xs text-muted font-medium font-label">Avg. passages:</span>
+<span class="font-mono text-xs font-semibold text-ink">2.4</span>
+</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface-2 border border-line flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-muted" data-icon="library_books">library_books</span>
+<span class="text-xs text-ink font-mono font-medium">5 handbooks · 3,203 chunks</span>
+</div>
+</div>
+</div>
+<!-- Prominent Editorial Callout Note -->
+<div class="flex items-start sm:items-center gap-3 px-4 py-2.5 bg-surface border-l-4 border-l-primary border border-line rounded-r-lg shadow-sm">
+<span class="material-symbols-outlined text-primary text-base mt-0.5 sm:mt-0" data-icon="info">info</span>
+<p class="text-xs text-muted leading-normal">
+<strong class="font-semibold text-ink">Methodology note:</strong> Synthetic questions drafted by an LLM and spot-checked by a human engineering authority. Multi-hop and negative distractors verified against full handbook appendices.
+        </p>
+</div>
+</div>
+<!-- Controls & Filtering Bar Card -->
+<div class="bg-surface border border-line rounded-lg p-3.5 shadow-sm flex flex-col gap-3.5">
+<div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+<!-- Left: Segmented Switch & Class Chips -->
+<div class="flex flex-wrap items-center gap-3">
+<!-- Segmented Tab Control (Holdout vs Tuning) -->
+<div class="inline-flex p-1 bg-surface-2 border border-line rounded-lg text-xs font-medium font-label">
+<button class="px-3 py-1 rounded text-muted hover:text-ink transition-colors" type="button">
+              Tuning set <span class="font-mono text-[11px] opacity-75">(40)</span>
+</button>
+<button class="px-3 py-1 rounded bg-surface text-ink font-semibold shadow-xs border border-line/60" type="button">
+              Holdout set <span class="font-mono text-[11px] text-primary font-bold">(80)</span>
+</button>
+</div>
+<div class="h-5 w-px bg-line hidden sm:block"></div>
+<!-- Query Class Filter Chips -->
+<div class="flex flex-wrap items-center gap-1.5 text-xs font-label">
+<span class="text-muted text-[11px] font-medium mr-1 uppercase tracking-wider">Class:</span>
+<button class="px-2.5 py-1 rounded-full bg-ink text-surface font-medium hover:opacity-95 transition-opacity" type="button">
+              All (80)
+            </button>
+<button class="px-2.5 py-1 rounded-full bg-surface hover:bg-surface-2 text-ink border border-line transition-colors flex items-center gap-1.5" type="button">
+<span class="w-2 h-2 rounded-full bg-warning"></span>
+              Exact identifier (26)
+            </button>
+<button class="px-2.5 py-1 rounded-full bg-surface hover:bg-surface-2 text-ink border border-line transition-colors flex items-center gap-1.5" type="button">
+<span class="w-2 h-2 rounded-full bg-dense"></span>
+              Paraphrase (38)
+            </button>
+<button class="px-2.5 py-1 rounded-full bg-surface hover:bg-surface-2 text-ink border border-line transition-colors flex items-center gap-1.5" type="button">
+<span class="w-2 h-2 rounded-full bg-purple-500"></span>
+              Distractor (16)
+            </button>
+</div>
+</div>
+<!-- Right: Text Filter Search & Secondary Export Action -->
+<div class="flex items-center gap-2">
+<!-- Filter Search Box -->
+<div class="relative flex-1 sm:w-80">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-base pointer-events-none" data-icon="search">search</span>
+<input class="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-2/60 border border-line rounded-lg text-ink placeholder:text-muted/70 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all font-body" placeholder="Filter by query text, ID, or keywords..." type="text" value=""/>
+</div>
+<!-- Export TSV / JSONL Actions Dropdown -->
+<div class="relative inline-flex">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line bg-surface hover:bg-surface-2 text-xs font-semibold font-headline text-ink shadow-2xs transition-colors" type="button">
+<span class="material-symbols-outlined text-sm text-muted" data-icon="download">download</span>
+<span>Export</span>
+<span class="material-symbols-outlined text-xs text-muted" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Benchmark Query Table Card -->
+<div class="bg-surface border border-line rounded-lg shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<!-- Sticky Table Header -->
+<thead>
+<tr class="border-b border-line bg-surface-2/70 text-muted font-label uppercase tracking-wider text-[11px] select-none sticky top-0 z-10">
+<th class="py-3 px-4 font-semibold w-20" scope="col">ID</th>
+<th class="py-3 px-3 font-semibold w-36" scope="col">Class</th>
+<th class="py-3 px-4 font-semibold" scope="col">Query Text</th>
+<th class="py-3 px-3 font-semibold w-36" scope="col">Target Corpus</th>
+<th class="py-3 px-3 font-semibold w-32 text-center" scope="col">Expected Chunks</th>
+<th class="py-3 px-4 font-semibold w-28 text-right" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-line text-ink">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#01</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-50 text-warning border border-warning/20">
+<span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                  Exact ID
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Key Decision Point C review exit criteria for Class B payloads</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Project lifecycle baseline verification &amp; commitment milestone gate.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7120.5F</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>2 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#04</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-50 text-dense border border-dense/20">
+<span class="w-1.5 h-1.5 rounded-full bg-dense"></span>
+                  Paraphrase
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Flight software safety criticality class A requirements SWE-139</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Software Engineering Requirements; verification of mission-critical autonomy.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7150.2D</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>1 chunk</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#14</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-50 text-warning border border-warning/20">
+<span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                  Exact ID
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Acceptable thermal vacuum test chamber margins for deep space payload</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Environmental test qualification protocols and thermal gradient delta tolerances.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NASA-SP-6105</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>3 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#27</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-50 text-dense border border-dense/20">
+<span class="w-1.5 h-1.5 rounded-full bg-dense"></span>
+                  Paraphrase
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>How is WBS dictionary structured during Phase B formulation?</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Work breakdown structure hierarchy rules and element numbering conventions.</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="flex flex-col gap-1 items-start">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface-2 text-ink border border-line">NASA-SP-6105</span>
+</div>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>2 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#42</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-purple-50 text-purple-700 border border-purple-200">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                  Distractor
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Subsystem peer review quorum rules under engineering technical authority</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Authority delegation boundaries; designed to evaluate false positive semantic matching.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7120.5F</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>1 chunk</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#59</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-50 text-dense border border-dense/20">
+<span class="w-1.5 h-1.5 rounded-full bg-dense"></span>
+                  Paraphrase
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Technical authority formal dissenting opinion elevation procedure</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Escalation path from lead engineer to Center Director and Agency Chief Engineer.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7120.5F</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>4 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 7 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#68</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-50 text-warning border border-warning/20">
+<span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                  Exact ID
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Distinction between compliance matrix and waiver for tailoring NPR 7120</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Institutional tailoring documentation and formal relief from prescriptive clauses.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7120.5F</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>2 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 8 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#77</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-50 text-dense border border-dense/20">
+<span class="w-1.5 h-1.5 rounded-full bg-dense"></span>
+                  Paraphrase
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>TRL 6 readiness milestone gate deliverables</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Technology readiness level maturation in relevant simulated environment prior to PDR.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NASA-SP-6105</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>3 chunks</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+<!-- Row 9 -->
+<tr class="hover:bg-surface-2/50 transition-colors group">
+<td class="py-3.5 px-4 font-mono font-medium text-muted">
+<span class="text-ink">Q#80</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-purple-50 text-purple-700 border border-purple-200">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                  Distractor
+                </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-ink tracking-tight font-headline text-[13px] flex items-center gap-2">
+<span>Independent cost estimate reconciliation variance thresholds</span>
+<button class="opacity-0 group-hover:opacity-100 p-0.5 text-muted hover:text-ink transition-opacity" title="Copy query text" type="button">
+<span class="material-symbols-outlined text-xs" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<div class="text-[11px] text-muted font-body mt-0.5">Joint Cost and Schedule Confidence Level (JCL) margin delta tolerance criteria.</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-ink border border-line">NPR 7120.5F</span>
+</td>
+<td class="py-3.5 px-3 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-ink">
+<span class="material-symbols-outlined text-success text-xs" data-icon="check_circle">check_circle</span>
+<span>1 chunk</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface hover:bg-primary hover:text-white text-primary border border-primary/30 text-xs font-semibold font-headline transition-all" type="button">
+<span>Try it</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_outward">arrow_outward</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="border-t border-line px-4 py-3 bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+<div class="text-muted font-label">
+          Showing <span class="font-mono text-ink font-semibold">1-9</span> of <span class="font-mono text-ink font-semibold">80</span> holdout queries
+        </div>
+<!-- Pagination Controls -->
+<div class="flex items-center gap-1 select-none">
+<button class="px-2.5 py-1 rounded border border-line/60 bg-surface-2/50 text-muted/50 cursor-not-allowed text-xs font-label" disabled="" type="button">
+            Previous
+          </button>
+<button class="w-7 h-7 rounded bg-primary text-white font-semibold font-mono text-xs flex items-center justify-center shadow-xs" type="button">
+            1
+          </button>
+<button class="w-7 h-7 rounded hover:bg-surface-2 text-ink font-mono text-xs flex items-center justify-center transition-colors" type="button">
+            2
+          </button>
+<button class="w-7 h-7 rounded hover:bg-surface-2 text-ink font-mono text-xs flex items-center justify-center transition-colors" type="button">
+            3
+          </button>
+<button class="w-7 h-7 rounded hover:bg-surface-2 text-ink font-mono text-xs flex items-center justify-center transition-colors" type="button">
+            4
+          </button>
+<button class="w-7 h-7 rounded hover:bg-surface-2 text-ink font-mono text-xs flex items-center justify-center transition-colors" type="button">
+            5
+          </button>
+<button class="w-7 h-7 rounded hover:bg-surface-2 text-ink font-mono text-xs flex items-center justify-center transition-colors" type="button">
+            6
+          </button>
+<button class="px-2.5 py-1 rounded border border-line bg-surface hover:bg-surface-2 text-ink text-xs font-label transition-colors" type="button">
+            Next
+          </button>
+</div>
+</div>
+</div>
+<!-- Quick Technical Benchmark Schema Card -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="p-4 bg-surface border border-line rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-bm25"></span>
+<span class="font-headline font-semibold text-xs text-ink">BM25 Baseline Target</span>
+</div>
+<p class="text-xs text-muted leading-relaxed">
+          Keyword sensitivity evaluates exact nomenclature matching across acronym-dense specifications like NPR 7150.2D.
+        </p>
+<div class="mt-2 text-[11px] font-mono text-muted">Mean MRR@10: <span class="text-ink font-semibold">0.582</span></div>
+</div>
+<div class="p-4 bg-surface border border-line rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-dense"></span>
+<span class="font-headline font-semibold text-xs text-ink">Dense Vector Embeddings</span>
+</div>
+<p class="text-xs text-muted leading-relaxed">
+          Targeted semantic paraphrases capture high-level systems engineering principles without literal lexical overlap.
+        </p>
+<div class="mt-2 text-[11px] font-mono text-muted">Mean MRR@10: <span class="text-ink font-semibold">0.714</span></div>
+</div>
+<div class="p-4 bg-surface border border-line rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-hybrid"></span>
+<span class="font-headline font-semibold text-xs text-ink">Hybrid Reciprocal Rank Fusion</span>
+</div>
+<p class="text-xs text-muted leading-relaxed">
+          Combines dense bi-encoder recall with BM25 keyword rigor to safely reject engineered technical distractors.
+        </p>
+<div class="mt-2 text-[11px] font-mono text-muted">Mean MRR@10: <span class="text-ink font-semibold">0.798</span></div>
+</div>
+</div>
+</main>
+<!-- Global Footer -->
+<footer class="mt-auto border-t border-line bg-surface py-5 text-xs text-muted font-label">
+<div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<span class="font-headline font-semibold text-ink">SearchLab</span>
+<span class="text-line">|</span>
+<span>Retrieval Benchmarking Lab over NASA Engineering Handbooks</span>
+</div>
+<div class="flex items-center gap-4 text-[11px] font-mono">
+<span class="text-muted">commit <a class="text-ink hover:underline" href="#">7f3a9d2</a></span>
+<span class="text-line">·</span>
+<span>Dataset CC-BY-4.0</span>
+<span class="text-line">·</span>
+<span class="text-muted">All documents are public-domain NASA technical reports</span>
+</div>
+</div>
+</footer>
+</body></html>

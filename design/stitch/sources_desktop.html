@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SearchLab · Sources &amp; Document Provenance</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            canvas: "#F6F4EF",
+            surface: "#FFFFFF",
+            "surface-2": "#EFECE5",
+            ink: "#0F1B2D",
+            muted: "#5B6779",
+            line: "#E3DED4",
+            primary: "#2F5BEA",
+            success: "#0E9F8A",
+            warning: "#C98A1B",
+            danger: "#C2463D",
+            method: {
+              bm25: "#E0782E",
+              dense: "#3B6FF0",
+              hybrid: "#11A38B"
+            }
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+            lg: "1rem",
+            xl: "1.5rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            headline: ["Geist", "sans-serif"],
+            display: ["Geist", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F6F4EF;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #E3DED4;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5B6779;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body antialiased min-h-full flex flex-col selection:bg-primary/10 selection:text-primary">
+<!-- TopNavBar (Derived verbatim from Shared Components JSON with Sources active) -->
+<header class="bg-surface border-b border-line shadow-sm sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+<!-- Brand Logo / Product Mark -->
+<div class="flex items-center gap-8">
+<a class="font-headline font-semibold tracking-tight text-base flex items-center gap-2 text-ink" href="#">
+<!-- Abstract Orbit Minimal Vector Mark (Strictly NO NASA insignia) -->
+<svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<ellipse class="text-primary/40" cx="12" cy="12" rx="10" ry="4.5" stroke="currentColor" stroke-dasharray="2 3" transform="rotate(30 12 12)"></ellipse>
+<ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-30 12 12)"></ellipse>
+<circle class="fill-primary stroke-none" cx="12" cy="12" r="2.25"></circle>
+<circle class="fill-primary stroke-none" cx="19" cy="8" r="1.5"></circle>
+</svg>
+<span>SearchLab</span>
+</a>
+<!-- Desktop Navigation Links -->
+<nav class="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight text-sm">
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150 ease-in-out" href="#">Search</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150 ease-in-out" href="#">Vector map</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150 ease-in-out" href="#">Evaluation</a>
+<a class="text-muted font-normal hover:text-ink pb-3.5 pt-4 transition-colors duration-150 ease-in-out" href="#">Queries</a>
+<!-- Active Tab: Sources -->
+<a class="text-ink font-semibold border-b-2 border-primary pb-3.5 pt-4" href="#">Sources</a>
+</nav>
+</div>
+<!-- Trailing Auxiliary Cluster -->
+<div class="flex items-center gap-3">
+<!-- Pill badge: Unofficial · not affiliated with NASA -->
+<span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-surface-2 text-muted border border-line">
+          Unofficial · not affiliated with NASA
+        </span>
+<!-- Sun/Moon Theme Toggle -->
+<button aria-label="Toggle theme" class="p-1.5 text-muted hover:text-ink rounded-md transition-colors duration-150" type="button">
+<span class="material-symbols-outlined text-[19px]">dark_mode</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10">
+<!-- Page Header Section -->
+<div class="space-y-6">
+<!-- Eyebrow & Status Pills -->
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-surface border border-line shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+<span class="font-mono text-xs font-medium text-ink tracking-wide">INDEXED CORPUS V1.0 · PUBLIC DOMAIN NASA ENGINEERING TECHNICAL REPORTS</span>
+</div>
+<!-- Quick corpus metrics strip -->
+<div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+<div class="px-2.5 py-1 bg-surface border border-line rounded text-muted">
+            Pages: <span class="text-ink font-semibold">2,148</span>
+</div>
+<div class="px-2.5 py-1 bg-surface border border-line rounded text-muted">
+            Chunks: <span class="text-ink font-semibold">3,203</span>
+</div>
+<div class="px-2.5 py-1 bg-surface border border-line rounded text-muted">
+            Total Tokens: <span class="text-ink font-semibold">~1.64M</span>
+</div>
+<div class="px-2.5 py-1 bg-surface border border-line rounded text-muted hidden lg:block">
+            Format: <span class="text-ink font-semibold">PDF/A-1b Text Extracts</span>
+</div>
+</div>
+</div>
+<!-- Main Title & Abstract -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2 border-b border-line">
+<div class="max-w-3xl space-y-2">
+<h1 class="text-3xl font-headline font-bold tracking-tight text-ink">
+            Sources &amp; Document Provenance
+          </h1>
+<p class="text-muted text-sm sm:text-base leading-relaxed font-body">
+            Five canonical public NASA systems engineering handbooks and procedural requirements, indexed into 3,203 clean chunks. All documents are works of the United States Government and in the public domain. Unofficial benchmark lab — not affiliated with or endorsed by NASA.
+          </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3 shrink-0">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-headline font-semibold bg-surface border border-line text-ink hover:bg-surface-2 rounded-lg transition-colors shadow-xs" id="downloadManifestBtn">
+<span class="material-symbols-outlined text-[17px] text-muted">download</span>
+            Download Manifest (JSON)
+          </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-headline font-semibold bg-ink text-white hover:bg-ink/90 rounded-lg transition-colors shadow-xs" id="verifyHashesBtn">
+<span class="material-symbols-outlined text-[17px] text-success">verified_user</span>
+            Verify SHA-256 Hashes
+          </button>
+</div>
+</div>
+</div>
+<!-- Document Cards Grid (5 Canonical Documents) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-xs font-mono font-semibold tracking-wider text-muted uppercase">
+          Indexed Documents (5)
+        </h2>
+<span class="text-xs font-mono text-muted">Vector partition color-coded</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+<!-- Card 1: NPR 7120.5F -->
+<article class="bg-surface rounded-xl border border-line shadow-xs flex flex-col justify-between overflow-hidden group hover:border-line hover:shadow-md transition-all duration-200">
+<div>
+<!-- Accent indicator bar: Blue -->
+<div class="h-1.5 w-full bg-[#2F5BEA]"></div>
+<div class="p-5 space-y-4">
+<!-- Header & ID -->
+<div class="flex items-start justify-between gap-3">
+<span class="inline-block px-2 py-0.5 font-mono text-xs font-semibold rounded bg-[#2F5BEA]/10 text-[#2F5BEA] border border-[#2F5BEA]/20">
+                  NPR 7120.5F
+                </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-muted">
+<span class="material-symbols-outlined text-[14px]">history</span>
+                  Active / Rev F
+                </span>
+</div>
+<!-- Official Title & Description -->
+<div class="space-y-1.5">
+<h3 class="font-headline font-semibold text-base text-ink tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  NASA Program and Project Management Processes and Requirements
+                </h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2">
+                  Governs management procedures for programs and projects throughout formulation and implementation, including KDP approval gates and life-cycle reviews.
+                </p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-xs font-mono">
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Pages</div>
+<div class="text-ink font-semibold mt-0.5">118 pages</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Indexed Chunks</div>
+<div class="text-ink font-semibold mt-0.5">642 chunks</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Retrieved Date</div>
+<div class="text-ink font-semibold mt-0.5">Oct 12, 2024</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">License</div>
+<div class="text-ink font-semibold mt-0.5 truncate">Public Domain</div>
+</div>
+</div>
+<!-- Hash Snippet -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-muted">
+<span class="truncate">sha256: 4f8a9e71...9c2be0a1</span>
+<button class="text-muted hover:text-ink ml-1 copy-btn" data-hash="4f8a9e7102eac3b91a84f3238da56d987a02c918204f129bb88c2b749c2be0a1" title="Copy full SHA-256">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="p-4 pt-3 border-t border-line bg-surface-2/30 flex items-center justify-between gap-2">
+<a class="inline-flex items-center gap-1.5 text-xs font-headline font-medium text-muted hover:text-ink transition-colors" href="https://nodis3.gsfc.nasa.gov/displayDir.cfm?Internal_ID=N_PR_7120_005F_" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Open PDF
+              <span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<a class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium text-ink bg-surface border border-line rounded hover:bg-surface-2 transition-colors" href="#">
+              Inspect 642 Chunks
+            </a>
+</div>
+</article>
+<!-- Card 2: NPR 7123.1D -->
+<article class="bg-surface rounded-xl border border-line shadow-xs flex flex-col justify-between overflow-hidden group hover:border-line hover:shadow-md transition-all duration-200">
+<div>
+<!-- Accent indicator bar: Teal / Turquoise -->
+<div class="h-1.5 w-full bg-[#06b6d4]"></div>
+<div class="p-5 space-y-4">
+<!-- Header & ID -->
+<div class="flex items-start justify-between gap-3">
+<span class="inline-block px-2 py-0.5 font-mono text-xs font-semibold rounded bg-[#06b6d4]/10 text-[#06b6d4] border border-[#06b6d4]/20">
+                  NPR 7123.1D
+                </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-muted">
+<span class="material-symbols-outlined text-[14px]">history</span>
+                  Active / Rev D
+                </span>
+</div>
+<!-- Official Title & Description -->
+<div class="space-y-1.5">
+<h3 class="font-headline font-semibold text-base text-ink tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  NASA Systems Engineering Processes and Requirements
+                </h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2">
+                  Prescribes the 17 core NASA systems engineering processes throughout system design, product realization, and technical management.
+                </p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-xs font-mono">
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Pages</div>
+<div class="text-ink font-semibold mt-0.5">142 pages</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Indexed Chunks</div>
+<div class="text-ink font-semibold mt-0.5">718 chunks</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Retrieved Date</div>
+<div class="text-ink font-semibold mt-0.5">Oct 12, 2024</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">License</div>
+<div class="text-ink font-semibold mt-0.5 truncate">Public Domain</div>
+</div>
+</div>
+<!-- Hash Snippet -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-muted">
+<span class="truncate">sha256: 7d12bc84...3a4f6109</span>
+<button class="text-muted hover:text-ink ml-1 copy-btn" data-hash="7d12bc8460eaf1185421dcb5567b4512999e2109841bb234acdf9813a4f6109" title="Copy full SHA-256">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="p-4 pt-3 border-t border-line bg-surface-2/30 flex items-center justify-between gap-2">
+<a class="inline-flex items-center gap-1.5 text-xs font-headline font-medium text-muted hover:text-ink transition-colors" href="https://nodis3.gsfc.nasa.gov/displayDir.cfm?Internal_ID=N_PR_7123_001D_" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Open PDF
+              <span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<a class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium text-ink bg-surface border border-line rounded hover:bg-surface-2 transition-colors" href="#">
+              Inspect 718 Chunks
+            </a>
+</div>
+</article>
+<!-- Card 3: NASA/SP-2016-6105 Rev 2 -->
+<article class="bg-surface rounded-xl border border-line shadow-xs flex flex-col justify-between overflow-hidden group hover:border-line hover:shadow-md transition-all duration-200">
+<div>
+<!-- Accent indicator bar: Green -->
+<div class="h-1.5 w-full bg-[#10b981]"></div>
+<div class="p-5 space-y-4">
+<!-- Header & ID -->
+<div class="flex items-start justify-between gap-3">
+<span class="inline-block px-2 py-0.5 font-mono text-xs font-semibold rounded bg-[#10b981]/10 text-[#0E9F8A] border border-[#10b981]/20">
+                  NASA/SP-2016-6105 Rev 2
+                </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-muted">
+<span class="material-symbols-outlined text-[14px]">library_books</span>
+                  Handbook
+                </span>
+</div>
+<!-- Official Title & Description -->
+<div class="space-y-1.5">
+<h3 class="font-headline font-semibold text-base text-ink tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  NASA Systems Engineering Handbook (SP-2016-6105 Rev 2)
+                </h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2">
+                  Comprehensive standard reference guide for space flight systems engineering, architecture synthesis, trade study methodologies, and interface control.
+                </p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-xs font-mono">
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Pages</div>
+<div class="text-ink font-semibold mt-0.5">308 pages</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Indexed Chunks</div>
+<div class="text-ink font-semibold mt-0.5">984 chunks</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Retrieved Date</div>
+<div class="text-ink font-semibold mt-0.5">Oct 14, 2024</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">License</div>
+<div class="text-ink font-semibold mt-0.5 truncate">Public Domain</div>
+</div>
+</div>
+<!-- Hash Snippet -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-muted">
+<span class="truncate">sha256: 9e33fa21...114a87c2</span>
+<button class="text-muted hover:text-ink ml-1 copy-btn" data-hash="9e33fa21b72e5192534a6efb904d98a230588c4d51b3a276b5e02201114a87c2" title="Copy full SHA-256">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="p-4 pt-3 border-t border-line bg-surface-2/30 flex items-center justify-between gap-2">
+<a class="inline-flex items-center gap-1.5 text-xs font-headline font-medium text-muted hover:text-ink transition-colors" href="https://www.nasa.gov/connect/ebooks/systems_engineering_handbook.html" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Open PDF
+              <span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<a class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium text-ink bg-surface border border-line rounded hover:bg-surface-2 transition-colors" href="#">
+              Inspect 984 Chunks
+            </a>
+</div>
+</article>
+<!-- Card 4: NPR 7150.2D -->
+<article class="bg-surface rounded-xl border border-line shadow-xs flex flex-col justify-between overflow-hidden group hover:border-line hover:shadow-md transition-all duration-200">
+<div>
+<!-- Accent indicator bar: Purple / Violet -->
+<div class="h-1.5 w-full bg-[#8b5cf6]"></div>
+<div class="p-5 space-y-4">
+<!-- Header & ID -->
+<div class="flex items-start justify-between gap-3">
+<span class="inline-block px-2 py-0.5 font-mono text-xs font-semibold rounded bg-[#8b5cf6]/10 text-[#8b5cf6] border border-[#8b5cf6]/20">
+                  NPR 7150.2D
+                </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-muted">
+<span class="material-symbols-outlined text-[14px]">history</span>
+                  Active / Rev D
+                </span>
+</div>
+<!-- Official Title & Description -->
+<div class="space-y-1.5">
+<h3 class="font-headline font-semibold text-base text-ink tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  NASA Software Engineering Requirements
+                </h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2">
+                  Mandatory technical engineering discipline requirements for flight software, ground support systems, software IV&amp;V, and safety-critical classifications.
+                </p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-xs font-mono">
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Pages</div>
+<div class="text-ink font-semibold mt-0.5">134 pages</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Indexed Chunks</div>
+<div class="text-ink font-semibold mt-0.5">420 chunks</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Retrieved Date</div>
+<div class="text-ink font-semibold mt-0.5">Oct 18, 2024</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">License</div>
+<div class="text-ink font-semibold mt-0.5 truncate">Public Domain</div>
+</div>
+</div>
+<!-- Hash Snippet -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-muted">
+<span class="truncate">sha256: 3c87e490...8820bd35</span>
+<button class="text-muted hover:text-ink ml-1 copy-btn" data-hash="3c87e490a61bd87154ebc0a876142387e408d6639891ac317a2378f8820bd35" title="Copy full SHA-256">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="p-4 pt-3 border-t border-line bg-surface-2/30 flex items-center justify-between gap-2">
+<a class="inline-flex items-center gap-1.5 text-xs font-headline font-medium text-muted hover:text-ink transition-colors" href="https://nodis3.gsfc.nasa.gov/displayDir.cfm?Internal_ID=N_PR_7150_002D_" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Open PDF
+              <span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<a class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium text-ink bg-surface border border-line rounded hover:bg-surface-2 transition-colors" href="#">
+              Inspect 420 Chunks
+            </a>
+</div>
+</article>
+<!-- Card 5: NASA/SP-2014-3705 -->
+<article class="bg-surface rounded-xl border border-line shadow-xs flex flex-col justify-between overflow-hidden group hover:border-line hover:shadow-md transition-all duration-200">
+<div>
+<!-- Accent indicator bar: Amber / Coral -->
+<div class="h-1.5 w-full bg-[#f97316]"></div>
+<div class="p-5 space-y-4">
+<!-- Header & ID -->
+<div class="flex items-start justify-between gap-3">
+<span class="inline-block px-2 py-0.5 font-mono text-xs font-semibold rounded bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/20">
+                  NASA/SP-2014-3705
+                </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-muted">
+<span class="material-symbols-outlined text-[14px]">menu_book</span>
+                  Lifecycle Guide
+                </span>
+</div>
+<!-- Official Title & Description -->
+<div class="space-y-1.5">
+<h3 class="font-headline font-semibold text-base text-ink tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  NASA Space Flight Program and Project Management Handbook
+                </h3>
+<p class="text-xs text-muted leading-relaxed line-clamp-2">
+                  Detailed practitioner companion for implementing NPR 7120.5 across Formulation Phases A-B through Implementation Phases C-F and mission closeout.
+                </p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-2 pt-2 border-t border-line/60 text-xs font-mono">
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Pages</div>
+<div class="text-ink font-semibold mt-0.5">210 pages</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Indexed Chunks</div>
+<div class="text-ink font-semibold mt-0.5">439 chunks</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">Retrieved Date</div>
+<div class="text-ink font-semibold mt-0.5">Nov 04, 2024</div>
+</div>
+<div class="p-2 rounded bg-surface-2/60">
+<div class="text-[10px] text-muted uppercase tracking-wider">License</div>
+<div class="text-ink font-semibold mt-0.5 truncate">Public Domain</div>
+</div>
+</div>
+<!-- Hash Snippet -->
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded bg-surface-2 border border-line text-[11px] font-mono text-muted">
+<span class="truncate">sha256: 6a4f91b3...e201bfa7</span>
+<button class="text-muted hover:text-ink ml-1 copy-btn" data-hash="6a4f91b3c907153a669147eb8fa29810bbce271e549842a27b87e201bfa7" title="Copy full SHA-256">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Footer Actions -->
+<div class="p-4 pt-3 border-t border-line bg-surface-2/30 flex items-center justify-between gap-2">
+<a class="inline-flex items-center gap-1.5 text-xs font-headline font-medium text-muted hover:text-ink transition-colors" href="https://ntrs.nasa.gov/citations/20150000400" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+              Open PDF
+              <span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<a class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium text-ink bg-surface border border-line rounded hover:bg-surface-2 transition-colors" href="#">
+              Inspect 439 Chunks
+            </a>
+</div>
+</article>
+<!-- Summary & Corpus Integrity Card -->
+<article class="bg-surface rounded-xl border border-dashed border-line shadow-xs flex flex-col justify-between p-5 space-y-4">
+<div class="space-y-3">
+<div class="flex items-center gap-2 text-ink">
+<span class="material-symbols-outlined text-[20px] text-primary">storage</span>
+<h3 class="font-headline font-semibold text-base">Benchmark Reproducibility</h3>
+</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              All 3,203 chunks are pinned with deterministic UUIDv5 identifiers hashed from <code class="font-mono bg-surface-2 px-1 py-0.5 rounded text-[11px] text-ink">doc_id + section_path + chunk_index</code>. Rebuilding the corpus yields bitwise identical vector representations and Lexical inverted index postings.
+            </p>
+<div class="space-y-1.5 pt-2 text-xs font-mono">
+<div class="flex justify-between py-1 border-b border-line/60">
+<span class="text-muted">Corpus Version:</span>
+<span class="text-ink font-semibold">1.0.4-freeze</span>
+</div>
+<div class="flex justify-between py-1 border-b border-line/60">
+<span class="text-muted">Embedding Norm:</span>
+<span class="text-ink font-semibold">L2 Unit Vector (1538)</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-muted">Index Compression:</span>
+<span class="text-ink font-semibold">HNSW + Lucene Postings</span>
+</div>
+</div>
+</div>
+<div class="pt-2">
+<a class="w-full inline-flex items-center justify-center gap-1.5 py-2 text-xs font-headline font-semibold bg-surface-2 text-ink hover:bg-line/70 rounded-lg transition-colors border border-line" href="#">
+<span class="material-symbols-outlined text-[16px]">terminal</span>
+              View Ingestion Script on GitHub
+            </a>
+</div>
+</article>
+</div>
+</section>
+<!-- Corpus Ingestion Pipeline Stepper ('How the corpus is built') -->
+<section class="bg-surface rounded-xl border border-line p-6 shadow-xs space-y-6">
+<!-- Section Header -->
+<div class="border-b border-line pb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">account_tree</span>
+<h2 class="text-lg font-headline font-semibold tracking-tight text-ink">How the corpus is built</h2>
+</div>
+<p class="text-xs text-muted mt-1 font-body">
+            Deterministic ingestion pipeline transforming raw public NASA PDFs into retrieval-ready embedding vectors.
+          </p>
+</div>
+<span class="text-xs font-mono text-muted bg-surface-2 px-2.5 py-1 rounded border border-line self-start sm:self-auto">
+          Pipeline runtime: 4m 12s on Apple M3 Max
+        </span>
+</div>
+<!-- 5-Step Horizontal Pipeline Stepper -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+<!-- Step 1 -->
+<div class="relative bg-surface-2/40 p-4 rounded-lg border border-line flex flex-col justify-between space-y-3">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center border border-primary/20">
+                1
+              </span>
+<span class="material-symbols-outlined text-[18px] text-muted">cloud_download</span>
+</div>
+<div class="font-headline font-semibold text-sm text-ink">Fetch PDF</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              Scraped from NASA STI / NTRS repository, verified with upstream HTTP ETags and SHA-256.
+            </p>
+</div>
+<div class="text-[10px] font-mono text-muted pt-2 border-t border-line/60">
+            HTTP 200 · SSL Verified
+          </div>
+</div>
+<!-- Step 2 -->
+<div class="relative bg-surface-2/40 p-4 rounded-lg border border-line flex flex-col justify-between space-y-3">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center border border-primary/20">
+                2
+              </span>
+<span class="material-symbols-outlined text-[18px] text-muted">cleaning_services</span>
+</div>
+<div class="font-headline font-semibold text-sm text-ink">Strip headers</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              PyMuPDF / pdfplumber parses layout; strips recurring running headers, footers, page numbers, and front-matter Roman numerals.
+            </p>
+</div>
+<div class="text-[10px] font-mono text-muted pt-2 border-t border-line/60">
+            Regex Masking · Layout Parser
+          </div>
+</div>
+<!-- Step 3 -->
+<div class="relative bg-surface-2/40 p-4 rounded-lg border border-line flex flex-col justify-between space-y-3">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center border border-primary/20">
+                3
+              </span>
+<span class="material-symbols-outlined text-[18px] text-muted">format_list_bulleted</span>
+</div>
+<div class="font-headline font-semibold text-sm text-ink">Split by outline</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              Hierarchical parsing by NASA structural TOC (Chapters §1-§6, Appendices A-G, Key Decision Points KDP).
+            </p>
+</div>
+<div class="text-[10px] font-mono text-muted pt-2 border-t border-line/60">
+            DOM Tree · Breadcrumb Paths
+          </div>
+</div>
+<!-- Step 4 -->
+<div class="relative bg-surface-2/40 p-4 rounded-lg border border-line flex flex-col justify-between space-y-3">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center border border-primary/20">
+                4
+              </span>
+<span class="material-symbols-outlined text-[18px] text-muted">splitscreen</span>
+</div>
+<div class="font-headline font-semibold text-sm text-ink">Chunk 1,000 chars</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              RecursiveTokenSplitter with target 512 tokens / ~1,000 characters, 64-token sliding window overlap, preserving table blocks.
+            </p>
+</div>
+<div class="text-[10px] font-mono text-muted pt-2 border-t border-line/60">
+            Overlap: 64 tok · Table Aware
+          </div>
+</div>
+<!-- Step 5 -->
+<div class="relative bg-surface-2/40 p-4 rounded-lg border border-line flex flex-col justify-between space-y-3">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center border border-primary/20">
+                5
+              </span>
+<span class="material-symbols-outlined text-[18px] text-muted">hub</span>
+</div>
+<div class="font-headline font-semibold text-sm text-ink">Embed</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+              Normalized 1538-dim vectors generated via OpenAI text-embedding-3-large &amp; Lucene BM25 inverted index.
+            </p>
+</div>
+<div class="text-[10px] font-mono text-muted pt-2 border-t border-line/60">
+            Dual Index: Dense + BM25
+          </div>
+</div>
+</div>
+</section>
+<!-- Technical Provenance & Benchmark Notes (Bento Accent Block) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<div class="p-5 rounded-xl bg-surface border border-line shadow-xs space-y-2.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">policy</span>
+<h4 class="font-headline font-semibold text-sm text-ink">Public Domain US Government Work</h4>
+</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+          Under 17 U.S.C. § 105, copyright protection is not available for any work of the United States Government. NASA publications and procedural requirements are freely accessible to researchers, engineers, and citizens.
+        </p>
+</div>
+<div class="p-5 rounded-xl bg-surface border border-line shadow-xs space-y-2.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-method-hybrid">dataset</span>
+<h4 class="font-headline font-semibold text-sm text-ink">Retrieved NTRS Artifacts</h4>
+</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+          Documents were acquired via the official NASA Technical Reports Server (ntrs.nasa.gov) and NODIS NASA Online Directives Information System. Raw source PDFs are archived in S3 with immutable SHA-256 manifests.
+        </p>
+</div>
+<div class="p-5 rounded-xl bg-surface border border-line shadow-xs space-y-2.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-method-bm25">balance</span>
+<h4 class="font-headline font-semibold text-sm text-ink">Zero Synthetic Hallucinations</h4>
+</div>
+<p class="text-xs text-muted leading-relaxed font-body">
+          The benchmark evaluation sets use verified human engineering questions mapped to ground-truth section citations. No chunk contents are modified, augmented, or synthetic.
+        </p>
+</div>
+</div>
+</main>
+<!-- Notification Toast Container -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-200 bg-ink text-white text-xs font-mono px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 border border-line/20" id="toast">
+<span class="material-symbols-outlined text-[16px] text-success">check_circle</span>
+<span id="toast-text">Copied to clipboard</span>
+</div>
+<!-- Footer Bar (Matching the other SearchLab screens) -->
+<footer class="mt-auto border-t border-line bg-surface py-5">
+<div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-muted">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-ink">SearchLab</span>
+<span>·</span>
+<span>Retrieval Benchmarking Lab over NASA Engineering Handbooks</span>
+</div>
+<div class="flex items-center gap-3 text-[11px]">
+<span>commit <code class="text-ink">7f3a9d2</code></span>
+<span>·</span>
+<span>Dataset CC-BY-4.0</span>
+<span>·</span>
+<span>All documents are public-domain NASA technical reports</span>
+</div>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+
+      function showToast(message) {
+        toastText.textContent = message;
+        toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+        }, 2200);
+      }
+
+      // Copy SHA buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const hash = btn.getAttribute('data-hash');
+          navigator.clipboard.writeText(hash).then(() => {
+            showToast(`Copied SHA-256: ${hash.substring(0, 12)}...`);
+          });
+        });
+      });
+
+      // Download manifest simulation
+      document.getElementById('downloadManifestBtn')?.addEventListener('click', () => {
+        showToast('Manifest corpus_provenance_v1.0.json generated');
+      });
+
+      // Verify hashes simulation
+      document.getElementById('verifyHashesBtn')?.addEventListener('click', () => {
+        showToast('All 5 document SHA-256 checksums verified ✓');
+      });
+    });
+  </script>
+</body></html>

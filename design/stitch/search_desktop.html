@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SearchLab · Retrieval Benchmarking over NASA Handbooks</title>
+<!-- Typography: Geist, Inter, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            canvas: "#F6F4EF",
+            surface: "#FFFFFF",
+            "surface-2": "#EFECE5",
+            ink: "#0F1B2D",
+            muted: "#5B6779",
+            line: "#E3DED4",
+            primary: "#2F5BEA",
+            success: "#0E9F8A",
+            warning: "#C98A1B",
+            danger: "#C2463D",
+            bm25: "#E0782E",
+            dense: "#3B6FF0",
+            hybrid: "#11A38B"
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Geist", "sans-serif"],
+            display: ["Geist", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Public Sans", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Technical scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F6F4EF;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D9D3C7;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B6AE9F;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-ink font-body antialiased min-h-screen flex flex-col selection:bg-primary/10 selection:text-primary">
+<!-- ========================================================================= -->
+<!-- 1. TopNavBar (Shared Component)                                          -->
+<!-- ========================================================================= -->
+<header class="bg-surface dark:bg-surface border-b border-line dark:border-line shadow-sm docked full-width top-0 z-50 sticky">
+<div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+<!-- Brand & Left Navigation Links -->
+<div class="flex items-center gap-8">
+<!-- Abstract Orbit Logo + Product Name -->
+<a class="font-headline font-semibold tracking-tight text-base flex items-center gap-2.5 text-ink dark:text-ink select-none group" href="#">
+<div class="w-7 h-7 rounded-lg bg-ink text-surface flex items-center justify-center transition-transform group-hover:scale-105">
+<!-- Custom Geometric Abstract Orbit SVG Mark -->
+<svg class="w-4 h-4 text-surface" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" fill="currentColor" r="3"></circle>
+<ellipse cx="12" cy="12" rx="9" ry="4" stroke="currentColor" transform="rotate(30 12 12)"></ellipse>
+</svg>
+</div>
+<span>SearchLab</span>
+</a>
+<!-- Desktop Navigation Links (Shared Component Anchor) -->
+<nav class="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight text-sm">
+<!-- Active Nav Item -->
+<a class="text-ink dark:text-ink font-semibold border-b-2 border-primary dark:border-primary pb-3.5 pt-4 transition-colors duration-150 flex items-center gap-1.5" href="#">
+            Search
+          </a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">
+            Vector map
+          </a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">
+            Evaluation
+          </a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">
+            Queries
+          </a>
+<a class="text-muted font-normal hover:text-ink dark:hover:text-ink pb-3.5 pt-4 transition-colors duration-150" href="#">
+            Sources
+          </a>
+</nav>
+</div>
+<!-- Right Trailing Controls -->
+<div class="flex items-center gap-3">
+<!-- Disclaimer Badge -->
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-normal bg-surface-2 text-muted border border-line">
+          Unofficial · not affiliated with NASA
+        </span>
+<!-- Theme Toggle Button -->
+<button aria-label="Toggle theme" class="w-8 h-8 rounded-md flex items-center justify-center text-muted hover:text-ink hover:bg-surface-2 border border-transparent hover:border-line transition-colors duration-150" id="themeToggleBtn" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- Main Content Workspace                                                    -->
+<!-- ========================================================================= -->
+<main class="flex-1 max-w-7xl mx-auto px-6 py-7 w-full space-y-6">
+<!-- 2. Hero Section -->
+<section class="space-y-2">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-ink font-headline">
+            Compare retrieval methods
+          </h1>
+<p class="text-sm text-muted max-w-3xl mt-0.5 font-body leading-relaxed">
+            Benchmark lexical, dense embedding, and hybrid rank fusion across 3,203 indexed chunks from NASA standard engineering handbooks.
+          </p>
+</div>
+<!-- Dataset Metadata Badge -->
+<div class="inline-flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-lg bg-surface border border-line shadow-xs font-mono text-xs text-ink">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>5 Handbooks</span>
+<span class="text-line">/</span>
+<span>3,203 Chunks</span>
+<span class="text-line">/</span>
+<span class="text-muted">1538-dim embeddings</span>
+</div>
+</div>
+</section>
+<!-- 3. Search Benchmarking Interactive Control Card -->
+<section class="bg-surface rounded-xl border border-line p-5 shadow-sm space-y-4">
+<!-- Search Input Box -->
+<div class="relative">
+<label class="sr-only" for="benchmarkQueryInput">Query benchmark input</label>
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted">
+<span class="material-symbols-outlined text-xl" data-icon="manage_search">manage_search</span>
+</div>
+<input class="w-full pl-11 pr-24 py-3 bg-surface-2/60 hover:bg-surface-2/90 focus:bg-surface border border-line rounded-lg text-ink font-body text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-150" id="benchmarkQueryInput" placeholder="Ask the handbooks or type an identifier (e.g. KDP C, SWE-139)" type="text" value="Key Decision Point C review exit criteria for Class B payloads"/>
+<div class="absolute inset-y-0 right-2 flex items-center">
+<span class="font-mono text-[11px] px-2 py-0.5 rounded bg-surface border border-line text-muted">
+            QID #042
+          </span>
+</div>
+</div>
+<!-- Controls Row: Slider, Search & Map Buttons -->
+<div class="flex flex-wrap items-center justify-between gap-4 pt-1">
+<!-- Top-k Slider control -->
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono font-medium text-muted">Depth limit:</span>
+<div class="flex items-center gap-2.5 bg-surface-2/70 px-3 py-1.5 rounded-md border border-line">
+<input class="w-24 h-1.5 bg-line rounded-lg appearance-none cursor-pointer accent-primary" id="topkSlider" max="10" min="1" type="range" value="5"/>
+<span class="text-xs font-mono font-semibold text-ink w-12 text-right" id="topkValueLabel">Top-5</span>
+</div>
+<span class="text-xs text-muted font-body hidden lg:inline">Showing top hits per retrieval channel</span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2.5 ml-auto">
+<!-- Show on vector map secondary button -->
+<a class="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-surface border border-line text-ink hover:bg-surface-2 text-xs font-headline font-semibold transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-base text-muted" data-icon="scatter_plot">scatter_plot</span>
+<span>Show on vector map</span>
+</a>
+<!-- Primary Search Button -->
+<button class="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-surface text-xs font-headline font-semibold transition-colors duration-150 shadow-xs" type="button">
+<span class="material-symbols-outlined text-base" data-icon="search">search</span>
+<span>Search</span>
+</button>
+</div>
+</div>
+<!-- Suggestions Quick Pills -->
+<div class="flex items-center gap-2 pt-2 border-t border-line/60 flex-wrap">
+<span class="text-xs font-mono text-muted mr-1">Benchmarks:</span>
+<button class="suggestion-pill text-xs px-2.5 py-1 rounded bg-surface-2 border border-line/90 text-ink font-body hover:border-primary hover:text-primary transition-colors duration-150" type="button">
+          KDP C exit criteria
+        </button>
+<button class="suggestion-pill text-xs px-2.5 py-1 rounded bg-surface-2 border border-line/90 text-ink font-body hover:border-primary hover:text-primary transition-colors duration-150" type="button">
+          SWE-139 software safety compliance
+        </button>
+<button class="suggestion-pill text-xs px-2.5 py-1 rounded bg-surface-2 border border-line/90 text-ink font-body hover:border-primary hover:text-primary transition-colors duration-150" type="button">
+          TRL 6 readiness milestone
+        </button>
+<button class="suggestion-pill text-xs px-2.5 py-1 rounded bg-surface-2 border border-line/90 text-ink font-body hover:border-primary hover:text-primary transition-colors duration-150" type="button">
+          WBS dictionary decomposition
+        </button>
+<button class="suggestion-pill text-xs px-2.5 py-1 rounded bg-surface-2 border border-line/90 text-ink font-body hover:border-primary hover:text-primary transition-colors duration-150" type="button">
+          Thermal margin margin requirements
+        </button>
+</div>
+</section>
+<!-- 4. Three Equal Benchmark Columns: BM25, Dense, Hybrid -->
+<section class="space-y-3">
+<!-- Section subheader bar -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono font-medium text-muted uppercase tracking-wider">Comparative Retrieval Channels (k = 5)</span>
+<span class="text-xs px-2 py-0.5 rounded bg-surface-2 text-muted border border-line font-mono">Evaluation Target: NPR 7120.5F §2.1.4</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-muted">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-bm25"></span>BM25 Lexical</span>
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-dense"></span>Dense Bi-Encoder</span>
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-hybrid"></span>Reciprocal Rank Fusion</span>
+</div>
+</div>
+<!-- Grid of 3 Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+<!-- ================================================================= -->
+<!-- COLUMN 1: BM25 (Lexical)                                          -->
+<!-- ================================================================= -->
+<div class="flex flex-col space-y-3">
+<!-- Column Header Card -->
+<div class="bg-surface rounded-xl border border-line p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-bm25"></span>
+<h2 class="font-headline font-semibold text-sm text-ink">BM25 (Okapi)</h2>
+</div>
+<span class="text-xs font-mono text-muted bg-surface-2 px-2 py-0.5 rounded border border-line">18 ms</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-muted pt-1 border-t border-line/60">
+<span>Avg Precision @ 5: <span class="font-semibold text-ink">0.62</span></span>
+<span>k1=1.5, b=0.75</span>
+</div>
+<!-- Ground Truth Position Banner -->
+<div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-2 text-ink border border-line text-xs font-mono">
+<span class="material-symbols-outlined text-sm text-warning" data-icon="info">info</span>
+<span>Expected passage at <span class="font-semibold text-bm25">rank 3</span></span>
+</div>
+</div>
+<!-- 5 Result Cards for BM25 -->
+<div class="space-y-2.5">
+<!-- BM25 Card 1 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#1</span>
+<span class="font-mono text-xs text-muted">score: 14.82</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7123.1D · p.41
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-bm25 h-full rounded-full" style="width: 88%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                4.0 System Design &gt; 4.1 Requirements Allocation
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Technical requirements verification protocols, milestone prerequisites, and operational envelope boundaries for NASA flight mission designs.
+              </p>
+</div>
+<!-- BM25 Card 2 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#2</span>
+<span class="font-mono text-xs text-muted">score: 13.91</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2016-6105 · p.88
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-bm25 h-full rounded-full" style="width: 79%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                3.0 Project Life Cycle &gt; 3.2 Phase C Detailed Design
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Lifecycle phase gates, detailed design requirements for primary subsystem baselines, and preliminary authorization matrices.
+              </p>
+</div>
+<!-- BM25 Card 3 (GROUND TRUTH HIT) -->
+<div class="bg-surface rounded-xl border-2 border-success/60 p-3.5 shadow-xs bg-success/5 space-y-2 relative">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-success/20 text-success border border-success/30">#3</span>
+<span class="font-mono text-xs text-muted">score: 12.45</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-success/15 text-success border border-success/40">
+<span class="material-symbols-outlined text-[13px] fill-1" data-icon="check_circle">check_circle</span>
+                    expected
+                  </span>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface px-2 py-0.5 rounded border border-line">
+                    NPR 7120.5F · p.64
+                  </span>
+</div>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1.5 rounded-full overflow-hidden">
+<div class="bg-bm25 h-full rounded-full" style="width: 68%"></div>
+</div>
+<div class="text-[11px] font-mono text-ink font-medium truncate">
+                2.1 Program Milestones &gt; 2.1.4 Key Decision Point (KDP) C Criteria
+              </div>
+<p class="text-xs text-ink font-body line-clamp-2 leading-relaxed font-normal">
+                Formal KDP C exit criteria for Class B payloads: mandatory project baseline agreement (PBA), integrated cost/schedule baseline confidence at 70%, and complete preliminary design.
+              </p>
+</div>
+<!-- BM25 Card 4 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#4</span>
+<span class="font-mono text-xs text-muted">score: 11.20</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2014-3705 · p.112
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-bm25 h-full rounded-full" style="width: 58%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                6.0 Review Processes &gt; 6.3 Preliminary Design Review
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                PDR entrance criteria, request for action (RFA) closure requirements prior to project milestone advancement, and technical authority concurrence.
+              </p>
+</div>
+<!-- BM25 Card 5 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#5</span>
+<span class="font-mono text-xs text-muted">score: 9.85</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7150.2D · p.145
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-bm25 h-full rounded-full" style="width: 44%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                Appendix G &gt; G.2 Compliance Matrix
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Software engineering requirements mapping, class compliance classifications, and waiver documentation protocols.
+              </p>
+</div>
+</div>
+</div>
+<!-- ================================================================= -->
+<!-- COLUMN 2: Dense Retrieval (Bi-Encoder Embeddings)                 -->
+<!-- ================================================================= -->
+<div class="flex flex-col space-y-3">
+<!-- Column Header Card -->
+<div class="bg-surface rounded-xl border border-line p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-dense"></span>
+<h2 class="font-headline font-semibold text-sm text-ink">Dense (text-embedding-3-large)</h2>
+</div>
+<span class="text-xs font-mono text-muted bg-surface-2 px-2 py-0.5 rounded border border-line">42 ms</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-muted pt-1 border-t border-line/60">
+<span>Cosine Sim: <span class="font-semibold text-ink">0.812</span></span>
+<span>1538-dim Normalized</span>
+</div>
+<!-- Ground Truth Position Banner -->
+<div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-2 text-ink border border-line text-xs font-mono">
+<span class="material-symbols-outlined text-sm text-success" data-icon="check_circle">check_circle</span>
+<span>Expected passage at <span class="font-semibold text-dense">rank 2</span></span>
+</div>
+</div>
+<!-- 5 Result Cards for Dense -->
+<div class="space-y-2.5">
+<!-- Dense Card 1 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#1</span>
+<span class="font-mono text-xs text-muted">score: 0.841</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7120.5F · p.62
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-dense h-full rounded-full" style="width: 84%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                3.2 Program Formulation &gt; Gate Review Exit Gates
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Mission formulation phase transitions, payload risk classification standards, and management authority boundary conditions.
+              </p>
+</div>
+<!-- Dense Card 2 (GROUND TRUTH HIT) -->
+<div class="bg-surface rounded-xl border-2 border-success/60 p-3.5 shadow-xs bg-success/5 space-y-2 relative">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-success/20 text-success border border-success/30">#2</span>
+<span class="font-mono text-xs text-muted">score: 0.812</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-success/15 text-success border border-success/40">
+<span class="material-symbols-outlined text-[13px] fill-1" data-icon="check_circle">check_circle</span>
+                    expected
+                  </span>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface px-2 py-0.5 rounded border border-line">
+                    NPR 7120.5F · p.64
+                  </span>
+</div>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1.5 rounded-full overflow-hidden">
+<div class="bg-dense h-full rounded-full" style="width: 81%"></div>
+</div>
+<div class="text-[11px] font-mono text-ink font-medium truncate">
+                2.1 Program Milestones &gt; 2.1.4 Key Decision Point (KDP) C Criteria
+              </div>
+<p class="text-xs text-ink font-body line-clamp-2 leading-relaxed font-normal">
+                Formal KDP C exit criteria for Class B payloads: mandatory project baseline agreement (PBA), integrated cost/schedule baseline confidence at 70%, and complete preliminary design.
+              </p>
+</div>
+<!-- Dense Card 3 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#3</span>
+<span class="font-mono text-xs text-muted">score: 0.789</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2016-6105 · p.94
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-dense h-full rounded-full" style="width: 78%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                4.3 Critical Design Review &gt; Acceptance Standards
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                CDR milestone prerequisites, technical product baseline maturity, and integration schedule validation requirements.
+              </p>
+</div>
+<!-- Dense Card 4 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#4</span>
+<span class="font-mono text-xs text-muted">score: 0.765</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7123.1D · p.108
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-dense h-full rounded-full" style="width: 76%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                5.1 Payload Safety &gt; Class B Risk Tolerances
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Risk assessment models for high-priority national payloads, failure mode effects, and safety non-compliance mitigation matrices.
+              </p>
+</div>
+<!-- Dense Card 5 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#5</span>
+<span class="font-mono text-xs text-muted">score: 0.742</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2014-3705 · p.180
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-dense h-full rounded-full" style="width: 74%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                Appendix C &gt; Life-Cycle Gate Checklist
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Mandatory criteria checklist for Phase B to Phase C approval authorization by the Convening Authority.
+              </p>
+</div>
+</div>
+</div>
+<!-- ================================================================= -->
+<!-- COLUMN 3: Hybrid (Reciprocal Rank Fusion)                         -->
+<!-- ================================================================= -->
+<div class="flex flex-col space-y-3">
+<!-- Column Header Card -->
+<div class="bg-surface rounded-xl border border-line p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-hybrid"></span>
+<h2 class="font-headline font-semibold text-sm text-ink">Hybrid (RRF k=60)</h2>
+</div>
+<span class="text-xs font-mono text-muted bg-surface-2 px-2 py-0.5 rounded border border-line">46 ms</span>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-muted pt-1 border-t border-line/60">
+<span>RRF Score: <span class="font-semibold text-ink">0.0328</span></span>
+<span>1/(60+r_lex) + 1/(60+r_dense)</span>
+</div>
+<!-- Ground Truth Position Banner -->
+<div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-success/15 text-success border border-success/30 text-xs font-mono font-medium">
+<span class="material-symbols-outlined text-sm text-success fill-1" data-icon="task_alt">task_alt</span>
+<span>Expected passage at <span class="font-bold text-success">rank 1</span></span>
+</div>
+</div>
+<!-- 5 Result Cards for Hybrid -->
+<div class="space-y-2.5">
+<!-- Hybrid Card 1 (GROUND TRUTH HIT - RANK 1) -->
+<div class="bg-surface rounded-xl border-2 border-success p-3.5 shadow-xs bg-success/5 space-y-2 relative ring-1 ring-success/20">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-success text-surface border border-success">#1</span>
+<span class="font-mono text-xs text-muted">score: 0.0328</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-success text-surface shadow-xs">
+<span class="material-symbols-outlined text-[13px] fill-1" data-icon="check_circle">check_circle</span>
+                    expected
+                  </span>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface px-2 py-0.5 rounded border border-line">
+                    NPR 7120.5F · p.64
+                  </span>
+</div>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1.5 rounded-full overflow-hidden">
+<div class="bg-hybrid h-full rounded-full" style="width: 98%"></div>
+</div>
+<div class="text-[11px] font-mono text-ink font-semibold truncate">
+                2.1 Program Milestones &gt; 2.1.4 Key Decision Point (KDP) C Criteria
+              </div>
+<p class="text-xs text-ink font-body line-clamp-2 leading-relaxed">
+                Formal KDP C exit criteria for Class B payloads: mandatory project baseline agreement (PBA), integrated cost/schedule baseline confidence at 70%, and complete preliminary design.
+              </p>
+</div>
+<!-- Hybrid Card 2 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#2</span>
+<span class="font-mono text-xs text-muted">score: 0.0284</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7120.5F · p.62
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-hybrid h-full rounded-full" style="width: 82%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                3.2 Program Formulation &gt; Gate Review Exit Gates
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Mission formulation phase transitions, payload risk classification standards, and management authority boundary conditions.
+              </p>
+</div>
+<!-- Hybrid Card 3 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#3</span>
+<span class="font-mono text-xs text-muted">score: 0.0241</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NPR 7123.1D · p.41
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-hybrid h-full rounded-full" style="width: 68%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                4.0 System Design &gt; 4.1 Requirements Allocation
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Technical requirements verification protocols, milestone prerequisites, and operational envelope boundaries for NASA flight mission designs.
+              </p>
+</div>
+<!-- Hybrid Card 4 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#4</span>
+<span class="font-mono text-xs text-muted">score: 0.0210</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2016-6105 · p.88
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-hybrid h-full rounded-full" style="width: 55%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                3.0 Project Life Cycle &gt; 3.2 Phase C Detailed Design
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                Lifecycle phase gates, detailed design requirements for primary subsystem baselines, and preliminary authorization matrices.
+              </p>
+</div>
+<!-- Hybrid Card 5 -->
+<div class="bg-surface rounded-xl border border-line p-3.5 shadow-xs hover:border-muted/50 transition-all duration-150 space-y-2">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-surface-2 text-ink border border-line">#5</span>
+<span class="font-mono text-xs text-muted">score: 0.0182</span>
+</div>
+<span class="text-[11px] font-mono font-medium text-ink bg-surface-2 px-2 py-0.5 rounded border border-line">
+                  NASA/SP-2016-6105 · p.94
+                </span>
+</div>
+<!-- Score Bar -->
+<div class="w-full bg-surface-2 h-1 rounded-full overflow-hidden">
+<div class="bg-hybrid h-full rounded-full" style="width: 44%"></div>
+</div>
+<div class="text-[11px] font-mono text-muted truncate">
+                4.3 Critical Design Review &gt; Acceptance Standards
+              </div>
+<p class="text-xs text-ink/90 font-body line-clamp-2 leading-relaxed">
+                CDR milestone prerequisites, technical product baseline maturity, and integration schedule validation requirements.
+              </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Metric Strip -->
+<section class="border-t border-line pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono text-muted">
+<div class="flex items-center gap-4">
+<span>Corpus: <span class="text-ink">5 Handbooks</span></span>
+<span>Chunker: <span class="text-ink">RecursiveToken (512 token / 64 overlap)</span></span>
+<span>Embedding: <span class="text-ink">text-embedding-3-large</span></span>
+</div>
+<div>
+<span>Latency delta: <span class="text-ink">+28ms hybrid overhead</span></span>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- Micro-interactions & State Handling Script                                -->
+<!-- ========================================================================= -->
+<script>
+    // Top-k slider interaction
+    const topkSlider = document.getElementById('topkSlider');
+    const topkValueLabel = document.getElementById('topkValueLabel');
+    if (topkSlider && topkValueLabel) {
+      topkSlider.addEventListener('input', (e) => {
+        topkValueLabel.textContent = `Top-${e.target.value}`;
+      });
+    }
+
+    // Benchmark suggestion chips click to populate query
+    const searchInput = document.getElementById('benchmarkQueryInput');
+    const suggestionPills = document.querySelectorAll('.suggestion-pill');
+    suggestionPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = pill.textContent.trim();
+          searchInput.focus();
+        }
+      });
+    });
+
+    // Dark/Light mode toggle micro-interaction (Visual toggle only)
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const icon = themeBtn.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+        }
+      });
+    }
+  </script>
+</body></html>
