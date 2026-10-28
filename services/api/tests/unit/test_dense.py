@@ -45,3 +45,22 @@ def test_reindexing_same_chunks_is_idempotent() -> None:
     build_dense_index(CHUNKS, emb, store)
     build_dense_index(CHUNKS, emb, store)
     assert len(DenseRetriever(emb, store).search("rate", top_k=10)) == 3
+
+
+def test_upsert_is_sent_in_batches() -> None:
+    from searchlab.store.qdrant_store import UPSERT_BATCH
+
+    client = QdrantClient(":memory:")
+    sizes: list[int] = []
+    original = client.upsert
+
+    def spy(collection_name: str, points: list, **kw: object):  # type: ignore[no-untyped-def]
+        sizes.append(len(points))
+        return original(collection_name, points=points, **kw)
+
+    client.upsert = spy  # type: ignore[method-assign]
+    many = [chunk(f"{i:016x}", f"text {i}") for i in range(UPSERT_BATCH * 2 + 5)]
+    emb = FakeEmbedder()
+    build_dense_index(many, emb, QdrantVectorStore(client))
+    assert sizes == [UPSERT_BATCH, UPSERT_BATCH, 5]
+    assert len(DenseRetriever(emb, QdrantVectorStore(client)).search("text", 300)) == len(many)
