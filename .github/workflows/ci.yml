@@ -18,7 +18,7 @@ jobs:
       - run: uv run mypy
       - run: uv run pytest -q
       - name: Corpus checksums still match the manifest
-        run: uv run searchlab verify
+        run: uv run searchlab --corpus github-docs verify
 
   web:
     runs-on: ubuntu-latest

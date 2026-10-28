@@ -1,14 +1,13 @@
 """Thin command layer: parse args, call pipeline functions, print results."""
 from __future__ import annotations
 
-from pathlib import Path
-
 import httpx
 import typer
 
 from searchlab.config import load_env
 from searchlab.corpus import pipeline
 from searchlab.corpus.manifest import verify_manifest, write_manifest
+from searchlab.corpus.registry import REPO_ROOT, CorpusSpec, get_corpus
 from searchlab.domain.models import Split
 from searchlab.eval.runner import ScoreRow
 from searchlab.services.eval_service import run_eval
@@ -16,10 +15,20 @@ from searchlab.wiring import load_chunks, make_embedder, make_retrievers
 
 app = typer.Typer(no_args_is_help=True)
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-CORPUS_DIR = REPO_ROOT / "fixtures" / "github-docs"
-RUNS_DIR = REPO_ROOT / "runs" / "github-docs"
 load_env(REPO_ROOT / "services" / "api" / ".env")
+_state: dict[str, CorpusSpec] = {}
+
+
+@app.callback()
+def main(
+    corpus: str = typer.Option(None, help="Corpus name (default: $SEARCHLAB_CORPUS)"),
+) -> None:
+    """SearchLab command line."""
+    _state["corpus"] = get_corpus(corpus)
+
+
+def _corpus() -> CorpusSpec:
+    return _state.get("corpus") or get_corpus()
 
 
 def _http_get(url: str) -> bytes:
@@ -31,31 +40,33 @@ def _http_get(url: str) -> bytes:
 @app.command()
 def fetch() -> None:
     """Download the pinned docs and write source_manifest.json."""
-    manifest = pipeline.fetch_snapshot(_http_get, CORPUS_DIR / "snapshot")
-    write_manifest(manifest, pipeline.manifest_path(CORPUS_DIR))
+    spec = _corpus()
+    manifest = spec.fetch(_http_get, spec.snapshot_dir)
+    write_manifest(manifest, pipeline.manifest_path(spec.dir))
     typer.echo(f"fetched {len(manifest.sources)} files")
 
 
 @app.command()
 def chunk() -> None:
     """Clean and chunk the snapshot into chunks.jsonl."""
-    manifest = pipeline.load_manifest(CORPUS_DIR)
-    problems = verify_manifest(manifest, CORPUS_DIR / "snapshot")
+    spec = _corpus()
+    manifest = pipeline.load_manifest(spec.dir)
+    problems = verify_manifest(manifest, spec.snapshot_dir)
     if problems:
         raise typer.Exit(code=_fail(problems))
-    chunks = pipeline.build_chunks(manifest, CORPUS_DIR / "snapshot")
-    pipeline.write_chunks(chunks, CORPUS_DIR / "chunks.jsonl")
+    chunks = spec.build_chunks(manifest, spec.snapshot_dir)
+    pipeline.write_chunks(chunks, spec.dir / "chunks.jsonl")
     typer.echo(f"wrote {len(chunks)} chunks")
 
 
 @app.command()
 def verify() -> None:
     """Check snapshot files against manifest checksums."""
-    manifest = pipeline.load_manifest(CORPUS_DIR)
-    problems = verify_manifest(manifest, CORPUS_DIR / "snapshot")
+    spec = _corpus()
+    problems = verify_manifest(pipeline.load_manifest(spec.dir), spec.snapshot_dir)
     if problems:
         raise typer.Exit(code=_fail(problems))
-    typer.echo("manifest ok")
+    typer.echo(f"{spec.name}: manifest ok")
 
 
 def _fail(problems: list[str]) -> int:
@@ -74,7 +85,8 @@ def _print_scores(scores: list[ScoreRow]) -> None:
 @app.command()
 def search(query: str, top_k: int = 5) -> None:
     """Run one query through all three methods."""
-    retrievers = make_retrievers(load_chunks(CORPUS_DIR), make_embedder(CORPUS_DIR))
+    spec = _corpus()
+    retrievers = make_retrievers(load_chunks(spec.dir), make_embedder(spec.dir))
     for name, retriever in retrievers.items():
         typer.echo(f"\n== {name}")
         for h in retriever.search(query, top_k):
@@ -84,9 +96,10 @@ def search(query: str, top_k: int = 5) -> None:
 @app.command()
 def tune(ks: str = "10,30,60,100") -> None:
     """Compare RRF k values on the DEV split only. Never touches the test split."""
-    embedder = make_embedder(CORPUS_DIR)
+    spec = _corpus()
+    embedder = make_embedder(spec.dir)
     for k in (int(x) for x in ks.split(",")):
-        outcome = run_eval(CORPUS_DIR, embedder, "dev", rrf_k=k)
+        outcome = run_eval(spec.dir, embedder, "dev", rrf_k=k)
         row = next(r for r in outcome.scores if r.method == "hybrid" and r.query_class == "all")
         typer.echo(f"rrf_k={k:<4} recall@5={row.recall_at_5:.3f} mrr@10={row.mrr_at_10:.3f}")
 
@@ -94,8 +107,9 @@ def tune(ks: str = "10,30,60,100") -> None:
 @app.command(name="eval")
 def eval_cmd(split: Split = "dev", rrf_k: int = 60) -> None:
     """Evaluate all methods and write runs/<run_id>/."""
+    spec = _corpus()
     outcome = run_eval(
-        CORPUS_DIR, make_embedder(CORPUS_DIR), split, rrf_k, runs_dir=RUNS_DIR, repo_root=REPO_ROOT
+        spec.dir, make_embedder(spec.dir), split, rrf_k, runs_dir=spec.runs_dir, repo_root=REPO_ROOT
     )
     _print_scores(outcome.scores)
     typer.echo(f"\nrun written to {outcome.run_dir}")

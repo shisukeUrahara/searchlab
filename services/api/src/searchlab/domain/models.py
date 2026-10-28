@@ -19,6 +19,7 @@ class Chunk(BaseModel):
     heading: str
     text: str
     url: str
+    page: int | None = None  # first PDF page of the chunk, when known
 
 
 class ScoredChunk(BaseModel):
