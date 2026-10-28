@@ -15,7 +15,8 @@ export function ClassBars({ scores }: { scores: ScoreRow[] }) {
     return row;
   });
   return (
-    <figure className="h-72">
+    <figure>
+      <div className="h-72">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={rows} margin={{ top: 8, right: 16, bottom: 4, left: -8 }}>
           <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" vertical={false} />
@@ -34,7 +35,8 @@ export function ClassBars({ scores }: { scores: ScoreRow[] }) {
           ))}
         </BarChart>
       </ResponsiveContainer>
-      <figcaption className="mt-1 font-mono text-xs text-muted">
+      </div>
+      <figcaption className="mt-2 font-mono text-xs text-muted">
         MRR@10 per query class. Whiskers: 95% bootstrap CI. Group sizes: {rows.map((r) => `${r.cls} n=${r.bm25_n}`).join(", ")}.
       </figcaption>
     </figure>
