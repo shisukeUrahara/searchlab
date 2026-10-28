@@ -14,7 +14,7 @@ Run one query through **BM25**, **dense (vector)** and **hybrid (RRF)** retrieva
 | Dense (`text-embedding-3-small`) | 1.000 | 0.794 |
 | Hybrid (RRF, k=60) | 1.000 | 0.856 |
 
-Run: [`runs/20261027T115232Z-test-k60`](runs/20261027T115232Z-test-k60) · analysis: [`analysis.md`](runs/20261027T115232Z-test-k60/analysis.md)
+Run: [`runs/github-docs/20261027T115232Z-test-k60`](runs/github-docs/20261027T115232Z-test-k60) · analysis: [`analysis.md`](runs/github-docs/20261027T115232Z-test-k60/analysis.md)
 
 **What this does and does not show**
 - Recall@5 is saturated. The corpus has only 78 chunks, so the top 5 is about 6% of it. Use MRR@10 to compare methods here.

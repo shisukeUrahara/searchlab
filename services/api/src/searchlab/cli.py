@@ -18,7 +18,7 @@ app = typer.Typer(no_args_is_help=True)
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 CORPUS_DIR = REPO_ROOT / "fixtures" / "github-docs"
-RUNS_DIR = REPO_ROOT / "runs"
+RUNS_DIR = REPO_ROOT / "runs" / "github-docs"
 load_env(REPO_ROOT / "services" / "api" / ".env")
 
 

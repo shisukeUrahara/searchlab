@@ -13,7 +13,7 @@ from searchlab.wiring import load_chunks, make_embedder, make_retrievers
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 CORPUS_DIR = REPO_ROOT / "fixtures" / "github-docs"
-RUNS_DIR = REPO_ROOT / "runs"
+RUNS_DIR = REPO_ROOT / "runs" / "github-docs"
 
 
 def build() -> object:
