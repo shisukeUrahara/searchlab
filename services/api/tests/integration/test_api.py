@@ -138,3 +138,29 @@ def test_archived_v1_runs_get_labels_and_curves() -> None:
     assert runs[0]["label"].startswith("Holdout set · RRF k=60")
     report = load_run(runs_dir, runs[0]["id"])
     assert report["curves"]["hybrid"][4] == 1.0  # Recall@5 from the archived run
+
+
+def test_uncached_query_falls_back_to_bm25_with_per_method_errors(tmp_path: Path) -> None:
+    from qdrant_client import QdrantClient
+
+    from searchlab.embeddings.cache import CachingEmbedder
+    from searchlab.retrieval.bm25 import Bm25Retriever
+    from searchlab.retrieval.dense import DenseRetriever, build_dense_index
+    from searchlab.retrieval.hybrid import HybridRetriever
+    from searchlab.store.qdrant_store import QdrantVectorStore
+
+    chunks = load_chunks(CORPUS)
+    live = FakeEmbedder()
+    store = QdrantVectorStore(QdrantClient(":memory:"))
+    build_dense_index(chunks, live, store)
+    offline = CachingEmbedder(tmp_path / "cache", live.model_id, inner=None)
+    bm25, dense = Bm25Retriever(chunks), DenseRetriever(offline, store)
+    retrievers = {"bm25": bm25, "dense": dense, "hybrid": HybridRetriever([bm25, dense])}
+    app = create_app(AppDeps(SearchService(retrievers, chunks), CORPUS, tmp_path,
+                             lambda s, k: run_eval(CORPUS, live, s, k)))
+    r = TestClient(app).post("/search", json={"query": "rate limit headers"})
+    assert r.status_code == 200
+    by = {m["method"]: m for m in r.json()["results"]}
+    assert by["bm25"]["error"] is None and by["bm25"]["hits"]
+    assert by["dense"]["error"] == "embedding_unavailable" and by["dense"]["hits"] == []
+    assert by["hybrid"]["error"] == "embedding_unavailable"

@@ -48,6 +48,12 @@ describe("MethodColumn", () => {
     expect(screen.getByText("x")).toBeInTheDocument();
   });
 
+  it("explains a method that could not run without an embedding", () => {
+    render(<MethodColumn docNumbers={docs} result={{ ...result, hits: [], error: "embedding_unavailable" }} goldIds={["a"]} onOpen={() => {}} />);
+    expect(screen.getByText("Needs an embedding for this question")).toBeInTheDocument();
+    expect(screen.queryByText(/Expected passage/)).toBeNull();
+  });
+
   it("handles empty results", () => {
     render(<MethodColumn docNumbers={docs} result={{ ...result, hits: [] }} goldIds={[]} onOpen={() => {}} />);
     expect(screen.getByText("No matching passages.")).toBeInTheDocument();

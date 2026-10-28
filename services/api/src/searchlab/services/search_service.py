@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from searchlab.domain.models import Chunk, ScoredChunk
 from searchlab.domain.ports import Retriever
+from searchlab.embeddings.cache import CacheMissError
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class MethodResult:
     method: str
     hits: list[ScoredChunk]
     latency_ms: float
+    error: str | None = None  # e.g. "embedding_unavailable"; other methods still answer
 
 
 class SearchService:
@@ -39,11 +41,20 @@ class SearchService:
         return counts
 
     def search(self, query: str, methods: Sequence[str], top_k: int) -> list[MethodResult]:
+        """Run each method; a method that needs a missing embedding reports an error instead.
+
+        Raises CacheMissError only when every requested method failed that way.
+        """
         out: list[MethodResult] = []
         for m in methods:
             start = time.perf_counter()
-            hits = self._retrievers[m].search(query, top_k)
-            out.append(MethodResult(m, hits, (time.perf_counter() - start) * 1000))
+            try:
+                hits, error = self._retrievers[m].search(query, top_k), None
+            except CacheMissError:
+                hits, error = [], "embedding_unavailable"
+            out.append(MethodResult(m, hits, (time.perf_counter() - start) * 1000, error))
+        if out and all(r.error for r in out):
+            raise CacheMissError("no method could answer without an embedding")
         return out
 
     def chunk(self, chunk_id: str) -> Chunk | None:

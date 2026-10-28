@@ -6,11 +6,14 @@ services:
     build:
       context: .
       dockerfile: services/api/Dockerfile
+    # The key is read at container start, never copied into the image (.env is dockerignored).
+    # Without it, saved queries still work and new queries fall back to BM25 only.
+    env_file:
+      - path: services/api/.env
+        required: false
     environment:
       QDRANT_URL: http://qdrant:6333
       CORS_ORIGINS: http://localhost:3000
-      # Optional. Without a key the API runs on the committed embedding cache.
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports: ["127.0.0.1:8000:8000"]
     depends_on: [qdrant]
 

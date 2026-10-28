@@ -39,6 +39,7 @@ export interface MethodResult {
   method: Method;
   latency_ms: number;
   hits: Hit[];
+  error?: string | null;
 }
 export interface SearchResponse {
   request_id: string;

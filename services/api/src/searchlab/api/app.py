@@ -85,6 +85,7 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
                 MethodOut(
                     method=r.method,
                     latency_ms=round(r.latency_ms, 2),
+                    error=r.error,
                     hits=[
                         HitOut(
                             rank=h.rank,

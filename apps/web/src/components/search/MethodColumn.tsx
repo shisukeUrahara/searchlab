@@ -1,4 +1,4 @@
-import { CircleCheck, CircleAlert } from "lucide-react";
+import { CircleAlert, CircleCheck, KeyRound } from "lucide-react";
 import { METHOD_LABEL, METHOD_META, type MethodResult } from "@/lib/api";
 import { ResultCard } from "./ResultCard";
 
@@ -24,7 +24,7 @@ export function MethodColumn({ result, goldIds, docNumbers, onOpen }: Props) {
           </span>
         </div>
         <p className="mt-2 font-mono text-xs text-muted">{meta.detail}</p>
-        {goldIds.length > 0 && (
+        {goldIds.length > 0 && !result.error && (
           <p
             className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-xs ${
               firstGold === 1
@@ -39,7 +39,17 @@ export function MethodColumn({ result, goldIds, docNumbers, onOpen }: Props) {
           </p>
         )}
       </header>
-      {result.hits.length === 0 ? (
+      {result.error === "embedding_unavailable" ? (
+        <div role="status" className="rounded-xl border border-dashed border-warn/40 bg-warn-bg/60 p-5 text-sm">
+          <p className="flex items-center gap-2 font-medium text-warn">
+            <KeyRound className="size-4" aria-hidden /> Needs an embedding for this question
+          </p>
+          <p className="mt-1.5 text-muted">
+            New questions need an OpenAI API key to be turned into a vector. Saved example questions work without one.
+            Keyword search (BM25) still answers.
+          </p>
+        </div>
+      ) : result.hits.length === 0 ? (
         <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">No matching passages.</p>
       ) : (
         <ol className="space-y-3">

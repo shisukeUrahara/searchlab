@@ -35,6 +35,7 @@ class MethodOut(BaseModel):
     method: MethodName
     latency_ms: float
     hits: list[HitOut]
+    error: str | None = None
 
 
 class SearchResponse(BaseModel):
