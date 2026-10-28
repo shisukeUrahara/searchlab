@@ -1,6 +1,8 @@
 """Thin command layer: parse args, call pipeline functions, print results."""
 from __future__ import annotations
 
+from pathlib import Path
+
 import httpx
 import typer
 
@@ -8,9 +10,10 @@ from searchlab.config import load_env
 from searchlab.corpus import pipeline
 from searchlab.corpus.manifest import verify_manifest, write_manifest
 from searchlab.corpus.registry import REPO_ROOT, CorpusSpec, get_corpus
-from searchlab.domain.models import Split
+from searchlab.domain.models import LabeledQuery, QueryClass, Split
 from searchlab.embeddings.cache import CacheMissError
 from searchlab.eval.runner import ScoreRow
+from searchlab.labeling.llm import JsonLlm
 from searchlab.services.eval_service import run_eval
 from searchlab.wiring import load_chunks, make_embedder, make_retrievers
 
@@ -133,3 +136,87 @@ def eval_cmd(split: Split = "dev", rrf_k: int = 60) -> None:
     )
     _print_scores(outcome.scores)
     typer.echo(f"\nrun written to {outcome.run_dir}")
+
+
+def _llm() -> JsonLlm:
+    import os
+
+    from openai import OpenAI
+
+    from searchlab.labeling.llm import OpenAIJsonLlm
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise typer.BadParameter("OPENAI_API_KEY is required for labeling")
+    return OpenAIJsonLlm(OpenAI())
+
+
+def _write_queries(path: Path, queries: list[LabeledQuery]) -> None:
+    path.write_text("".join(q.model_dump_json() + "\n" for q in queries))
+
+
+def _read_queries(path: Path) -> list[LabeledQuery]:
+    return [LabeledQuery.model_validate_json(x) for x in path.read_text().splitlines() if x]
+
+
+@app.command(name="draft-queries")
+def draft_queries_cmd(exact: int = 40, paraphrase: int = 50, distractor: int = 30,
+                      seed: int = 13) -> None:
+    """Draft labeled queries with an LLM into queries.draft.jsonl (one seed gold chunk each)."""
+    from searchlab.labeling.draft import draft_queries
+
+    spec = _corpus()
+    llm = _llm()
+    counts: dict[QueryClass, int] = {"exact_id": exact, "paraphrase": paraphrase,
+                                     "distractor": distractor}
+    queries = draft_queries(load_chunks(spec.dir), llm, counts, seed=seed)
+    _write_queries(spec.dir / "queries.draft.jsonl", queries)
+    typer.echo(f"drafted {len(queries)} queries with {llm.model_id}")
+
+
+@app.command(name="judge-pool")
+def judge_pool_cmd(depth: int = 10) -> None:
+    """Pool every method's top-k per draft query, LLM-judge relevance, write dev/test splits."""
+    from searchlab.labeling.judge import judge_query, pool
+
+    spec = _corpus()
+    llm = _llm()
+    chunks = load_chunks(spec.dir)
+    retrievers = make_retrievers(chunks, make_embedder(spec.dir))
+    judged: list[LabeledQuery] = []
+    lines: list[str] = []
+    for q in _read_queries(spec.dir / "queries.draft.jsonl"):
+        updated, judgments = judge_query(q, pool(q.text, retrievers, depth), llm)
+        judged.append(updated)
+        lines += [j.model_dump_json() for j in judgments]
+    (spec.dir / "judgments.jsonl").write_text("\n".join(lines) + "\n")
+    for split in ("dev", "test"):
+        _write_queries(spec.dir / f"queries.{split}.jsonl", [q for q in judged if q.split == split])
+    extra = sum(len(q.gold_chunk_ids) - 1 for q in judged)
+    typer.echo(f"judged {len(judged)} queries, {extra} extra relevant chunks added")
+
+
+@app.command(name="review-sheet")
+def review_sheet_cmd(n: int = 25, seed: int = 7) -> None:
+    """Write docs/label_review.md with n random queries for a human spot-check."""
+    from searchlab.labeling.review import pick_for_review, render_sheet
+
+    spec = _corpus()
+    queries = [q for s in ("dev", "test") for q in _read_queries(spec.dir / f"queries.{s}.jsonl")]
+    chunks = {c.chunk_id: c for c in load_chunks(spec.dir)}
+    out = REPO_ROOT / "docs" / "label_review.md"
+    out.write_text(render_sheet(pick_for_review(queries, n, seed), chunks))
+    typer.echo(f"wrote {out}")
+
+
+@app.command(name="apply-review")
+def apply_review_cmd() -> None:
+    """Read ticked boxes from docs/label_review.md, report agreement, drop wrong labels."""
+    from searchlab.labeling.review import apply_review, parse_sheet
+
+    spec = _corpus()
+    result = parse_sheet((REPO_ROOT / "docs" / "label_review.md").read_text())
+    for split in ("dev", "test"):
+        path = spec.dir / f"queries.{split}.jsonl"
+        _write_queries(path, apply_review(_read_queries(path), result.wrong))
+    typer.echo(f"checked {result.checked} labels, {len(result.wrong)} wrong, "
+               f"agreement {result.agreement:.3f}")
