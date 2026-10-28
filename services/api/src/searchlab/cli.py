@@ -222,3 +222,28 @@ def apply_review_cmd() -> None:
         _write_queries(path, apply_review(_read_queries(path), result.wrong))
     typer.echo(f"checked {result.checked} labels, {len(result.wrong)} wrong, "
                f"agreement {result.agreement:.3f}")
+
+
+@app.command()
+def project(knn: int = 5) -> None:
+    """Build graph.json for the vector map (needs `uv sync --group viz`)."""
+    import json
+
+    import numpy as np
+
+    from searchlab.corpus.nasa import DOCS
+    from searchlab.retrieval.dense import chunk_embedding_text
+    from searchlab.viz.projection import build_graph, knn_edges, scale, umap_layout
+
+    spec = _corpus()
+    chunks = load_chunks(spec.dir)
+    embedder = make_embedder(spec.dir)
+    vectors = np.asarray(embedder.embed([chunk_embedding_text(c) for c in chunks]), np.float32)
+    coords = scale(umap_layout(vectors))
+    edges = knn_edges(vectors, knn)
+    docs = [{"source_id": d.source_id, "title": d.title, "doc_number": d.doc_number} for d in DOCS]
+    meta = {"layout": "UMAP n_neighbors=15 min_dist=0.1 cosine seed=42", "knn": knn,
+            "embedding_model": embedder.model_id, "chunk_count": len(chunks)}
+    graph = build_graph(chunks, coords, edges, docs, meta)
+    (spec.dir / "graph.json").write_text(json.dumps(graph, separators=(",", ":")))
+    typer.echo(f"graph: {len(graph['nodes'])} nodes, {len(graph['edges'])} edges")
