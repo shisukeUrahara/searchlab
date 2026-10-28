@@ -50,7 +50,7 @@ export function RankHeatmap({ cases, queries }: { cases: CaseRow[]; queries: Rec
           ))}
         </ul>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-line">
+      <div className="relative overflow-x-auto rounded-xl border border-line">
         <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-surface-2 text-left font-mono text-xs uppercase text-muted">
             <tr>

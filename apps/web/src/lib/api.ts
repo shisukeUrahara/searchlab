@@ -132,6 +132,11 @@ export interface CorpusDoc {
   url: string;
   pages: number | null;
   chunks: number;
+  title?: string;
+  retrieved_at_utc?: string;
+  sha256?: string;
+  license?: string;
+  transformation?: string;
 }
 export interface Corpus {
   label: string;
@@ -141,11 +146,13 @@ export interface Corpus {
   docs: CorpusDoc[];
 }
 export interface QueryPage {
-  items: LabeledQuery[];
+  items: (LabeledQuery & { gold_sources?: string[] })[];
   total: number;
   limit: number;
   offset: number;
   split_label: string;
+  split_total?: number;
+  class_counts?: Record<string, number>;
 }
 export interface RunSummary {
   id: string;
@@ -196,8 +203,12 @@ export const api = {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ query, top_k: topK }),
     }),
-  queries: (split: "dev" | "test", limit = 200, offset = 0) =>
-    request<QueryPage>(`/queries?split=${split}&limit=${limit}&offset=${offset}`),
+  queries: (split: "dev" | "test", limit = 200, offset = 0, opts: { queryClass?: string; q?: string } = {}) => {
+    const params = new URLSearchParams({ split, limit: String(limit), offset: String(offset) });
+    if (opts.queryClass) params.set("query_class", opts.queryClass);
+    if (opts.q) params.set("q", opts.q);
+    return request<QueryPage>(`/queries?${params}`);
+  },
   chunk: (id: string) => request<Chunk>(`/chunks/${encodeURIComponent(id)}`),
   corpus: () => request<Corpus>("/corpus"),
   graph: () => request<GraphData>("/graph"),

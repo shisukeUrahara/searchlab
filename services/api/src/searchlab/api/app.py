@@ -108,6 +108,7 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
     def corpus() -> dict[str, Any]:
         manifest = read_manifest(deps.corpus_dir / "source_manifest.json")
         counts = deps.search.chunk_counts_by_source()
+        titles = deps.search.titles_by_source()
         return {
             "label": deps.corpus_label,
             "chunk_count": deps.search.chunk_count,
@@ -115,7 +116,9 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
             "embedding_dims": deps.embedding_dims,
             "docs": [
                 {"source_id": s.source_id, "doc_number": s.doc_number, "url": s.url,
-                 "pages": s.pages, "chunks": counts.get(s.source_id, 0)}
+                 "title": titles.get(s.source_id, s.source_id), "pages": s.pages,
+                 "chunks": counts.get(s.source_id, 0), "retrieved_at_utc": s.retrieved_at_utc,
+                 "sha256": s.sha256, "license": s.license, "transformation": s.transformation}
                 for s in manifest.sources
             ],
         }
@@ -128,10 +131,20 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
         query_class: QueryClass | None = None,
         q: str | None = Query(None, max_length=200),
     ) -> dict[str, Any]:
-        page, total = page_queries(load_queries(deps.corpus_dir, split), limit, offset,
-                                   query_class, q)
-        return {"items": [x.model_dump() for x in page], "total": total, "limit": limit,
-                "offset": offset, "split_label": SPLIT_LABEL[split]}
+        all_queries = load_queries(deps.corpus_dir, split)
+        page, total = page_queries(all_queries, limit, offset, query_class, q)
+        class_counts: dict[str, int] = {}
+        for x in all_queries:
+            class_counts[x.query_class] = class_counts.get(x.query_class, 0) + 1
+
+        def sources(ids: tuple[str, ...]) -> list[str]:
+            found = (deps.search.chunk(i) for i in ids)
+            return list(dict.fromkeys(c.source_id for c in found if c))
+
+        items = [{**x.model_dump(), "gold_sources": sources(x.gold_chunk_ids)} for x in page]
+        return {"items": items, "total": total, "limit": limit, "offset": offset,
+                "split_label": SPLIT_LABEL[split], "split_total": len(all_queries),
+                "class_counts": class_counts}
 
     @app.post("/eval-runs")
     def create_eval_run(req: EvalRunRequest) -> dict[str, Any]:

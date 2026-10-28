@@ -156,7 +156,7 @@ export default function SearchPage() {
         {chips.length > 0 && (
           <div className="mt-4 border-t border-line pt-4">
             <p className="mb-2 font-mono text-xs text-muted">Labeled examples (fills the box; press Search to run)</p>
-            <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:flex-wrap" aria-label="Example queries">
+            <div className="relative -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:flex-wrap" aria-label="Example queries">
               {chips.map((c) => (
                 <button
                   key={c.query_id}

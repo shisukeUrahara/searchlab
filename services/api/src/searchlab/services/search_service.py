@@ -29,6 +29,9 @@ class SearchService:
     def chunk_count(self) -> int:
         return len(self._chunks)
 
+    def titles_by_source(self) -> dict[str, str]:
+        return {c.source_id: c.title for c in self._chunks.values()}
+
     def chunk_counts_by_source(self) -> dict[str, int]:
         counts: dict[str, int] = {}
         for c in self._chunks.values():

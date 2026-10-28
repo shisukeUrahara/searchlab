@@ -65,12 +65,16 @@ def test_sources_and_corpus(client: TestClient) -> None:
     corpus = client.get("/corpus").json()
     assert corpus["label"] == "GitHub Docs (v1)" and corpus["chunk_count"] == 78
     assert len(corpus["docs"]) == 6 and sum(d["chunks"] for d in corpus["docs"]) == 78
+    assert all(len(d["sha256"]) == 64 and d["title"] for d in corpus["docs"])
 
 
 def test_queries_are_paginated_and_filtered(client: TestClient) -> None:
     first = client.get("/queries", params={"split": "test", "limit": 10}).json()
     assert first["total"] == 30 and len(first["items"]) == 10
-    assert first["split_label"] == "Holdout set"
+    assert first["split_label"] == "Holdout set" and first["split_total"] == 30
+    assert first["class_counts"] == {"exact_id": 10, "paraphrase": 13, "distractor": 7}
+    assert all(q["gold_sources"] and q["gold_sources"][0].startswith("github-docs/")
+               for q in first["items"])
     last = client.get("/queries", params={"split": "test", "limit": 10, "offset": 25}).json()
     assert len(last["items"]) == 5
     ids = {q["query_id"] for q in first["items"]} & {q["query_id"] for q in last["items"]}
