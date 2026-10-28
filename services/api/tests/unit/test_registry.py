@@ -9,7 +9,7 @@ from searchlab.domain.models import Chunk
 
 def test_default_and_env_selection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("SEARCHLAB_CORPUS", raising=False)
-    assert get_corpus().name == "github-docs"
+    assert get_corpus().name == "nasa"
     monkeypatch.setenv("SEARCHLAB_CORPUS", "github-docs")
     assert get_corpus().dir.name == "github-docs"
 

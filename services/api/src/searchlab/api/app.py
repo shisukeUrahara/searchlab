@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from searchlab.api.errors import ApiError, install_error_handlers
@@ -20,9 +19,11 @@ from searchlab.api.schemas import (
     SearchResponse,
 )
 from searchlab.corpus.manifest import read_manifest
-from searchlab.domain.models import Split
-from searchlab.eval.queries import load_queries
-from searchlab.services.eval_service import EvalOutcome
+from searchlab.domain.models import QueryClass, Split
+from searchlab.eval.naming import SPLIT_LABEL
+from searchlab.eval.queries import load_queries, page_queries
+from searchlab.services.eval_service import DirtyTreeError, EvalOutcome
+from searchlab.services.run_report import RunNotFoundError, list_runs, load_run
 from searchlab.services.search_service import SearchService
 
 EvalFn = Callable[[Split, int], EvalOutcome]
@@ -35,6 +36,8 @@ class AppDeps:
     corpus_dir: Path
     runs_dir: Path
     run_eval: EvalFn
+    corpus_label: str = ""
+    graph_path: Path | None = None
 
 
 def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
@@ -97,35 +100,47 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
             ],
         )
 
+    @app.get("/corpus")
+    def corpus() -> dict[str, Any]:
+        return {"label": deps.corpus_label, "chunk_count": deps.search.chunk_count}
+
     @app.get("/queries")
-    def queries(split: Split = "dev") -> list[dict[str, Any]]:
-        return [q.model_dump() for q in load_queries(deps.corpus_dir, split)]
+    def queries(
+        split: Split = "dev",
+        limit: int = Query(15, ge=1, le=200),
+        offset: int = Query(0, ge=0),
+        query_class: QueryClass | None = None,
+        q: str | None = Query(None, max_length=200),
+    ) -> dict[str, Any]:
+        page, total = page_queries(load_queries(deps.corpus_dir, split), limit, offset,
+                                   query_class, q)
+        return {"items": [x.model_dump() for x in page], "total": total, "limit": limit,
+                "offset": offset, "split_label": SPLIT_LABEL[split]}
 
     @app.post("/eval-runs")
     def create_eval_run(req: EvalRunRequest) -> dict[str, Any]:
-        outcome = deps.run_eval(req.split, req.rrf_k)
+        try:
+            outcome = deps.run_eval(req.split, req.rrf_k)
+        except DirtyTreeError as exc:
+            raise ApiError(409, "dirty_tree", str(exc)) from exc
         return {"run_id": outcome.run_id}
 
     @app.get("/eval-runs")
-    def list_eval_runs() -> list[str]:
-        if not deps.runs_dir.exists():
-            return []
-        return sorted((p.name for p in deps.runs_dir.iterdir() if p.is_dir()), reverse=True)
+    def list_eval_runs() -> list[dict[str, Any]]:
+        return list_runs(deps.runs_dir)
 
     @app.get("/eval-runs/{run_id}")
     def get_eval_run(run_id: str) -> dict[str, Any]:
-        run_dir = deps.runs_dir / run_id
-        if "/" in run_id or ".." in run_id or not run_dir.is_dir():
-            raise ApiError(404, "run_not_found", f"no run {run_id}")
-        cases = [
-            json.loads(line)
-            for line in (run_dir / "per_case_results.jsonl").read_text().splitlines()
-        ]
-        return {
-            "manifest": json.loads((run_dir / "run_manifest.json").read_text()),
-            "scores": json.loads((run_dir / "scores.json").read_text()),
-            "cases": cases,
-        }
+        try:
+            return load_run(deps.runs_dir, run_id)
+        except RunNotFoundError as exc:
+            raise ApiError(404, "run_not_found", f"no run {run_id}") from exc
+
+    @app.get("/graph")
+    def graph() -> Response:
+        if deps.graph_path is None or not deps.graph_path.exists():
+            raise ApiError(404, "graph_not_built", "run `searchlab project` to build the map")
+        return Response(deps.graph_path.read_bytes(), media_type="application/json")
 
     return app
 

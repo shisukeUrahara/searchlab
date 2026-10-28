@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api, METHOD_LABEL, type EvalRun, type LabeledQuery } from "@/lib/api";
+import { api, METHOD_LABEL, type EvalRun, type LabeledQuery, type RunSummary } from "@/lib/api";
 import { MetricTable } from "@/components/MetricTable";
 import { Empty, ErrorBox, Loading } from "@/components/StateViews";
 
@@ -10,7 +10,7 @@ function rankOf(ids: string[], gold: string[]): number | null {
 }
 
 export default function EvalPage() {
-  const [runs, setRuns] = useState<string[] | null>(null);
+  const [runs, setRuns] = useState<RunSummary[] | null>(null);
   const [runId, setRunId] = useState("");
   const [run, setRun] = useState<{ id: string; data?: EvalRun; error?: unknown } | null>(null);
   const [queries, setQueries] = useState<Record<string, LabeledQuery>>({});
@@ -20,8 +20,8 @@ export default function EvalPage() {
     Promise.all([api.runs(), api.queries("dev"), api.queries("test")])
       .then(([r, dev, test]) => {
         setRuns(r);
-        setQueries(Object.fromEntries([...dev, ...test].map((q) => [q.query_id, q])));
-        setRunId(r.find((x) => x.includes("-test-")) ?? r[0] ?? "");
+        setQueries(Object.fromEntries([...dev.items, ...test.items].map((q) => [q.query_id, q])));
+        setRunId((r.find((x) => x.split === "test") ?? r[0])?.id ?? "");
       })
       .catch(setError);
   }, []);
@@ -55,7 +55,7 @@ export default function EvalPage() {
       <label className="flex items-center gap-2 text-sm">
         Run
         <select value={runId} onChange={(e) => setRunId(e.target.value)} className="rounded-md border border-line bg-surface px-2 py-1 font-mono text-xs">
-          {runs.map((r) => <option key={r}>{r}</option>)}
+          {runs.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
         </select>
       </label>
       {!ready && <Loading />}

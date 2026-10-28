@@ -11,7 +11,7 @@ from searchlab.corpus.manifest import Manifest
 from searchlab.domain.models import Chunk
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
-DEFAULT_CORPUS = "github-docs"
+DEFAULT_CORPUS = "nasa"
 
 Fetcher = Callable[[str], bytes]
 

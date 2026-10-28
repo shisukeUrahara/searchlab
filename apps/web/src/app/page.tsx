@@ -35,7 +35,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     Promise.all([api.queries("dev"), api.queries("test")])
-      .then(([dev, test]) => setLabeled([...dev, ...test]))
+      .then(([dev, test]) => setLabeled([...dev.items, ...test.items]))
       .catch(() => setLabeled([]));
     const q = new URLSearchParams(window.location.search).get("q");
     const timer = q ? setTimeout(() => void run(q, 5), 0) : undefined;

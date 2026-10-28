@@ -22,10 +22,12 @@ def build() -> object:
     search = SearchService(retrievers, chunks)
 
     def eval_fn(split: Split, rrf_k: int) -> EvalOutcome:
-        return run_eval(corpus_dir, embedder, split, rrf_k, runs_dir=runs_dir, repo_root=REPO_ROOT)
+        return run_eval(corpus_dir, embedder, split, rrf_k, runs_dir=runs_dir,
+                        repo_root=REPO_ROOT, corpus_label=spec.label)
 
     origins = os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
-    return create_app(AppDeps(search, corpus_dir, runs_dir, eval_fn), origins)
+    deps = AppDeps(search, corpus_dir, runs_dir, eval_fn, spec.label, corpus_dir / "graph.json")
+    return create_app(deps, origins)
 
 
 app = build()

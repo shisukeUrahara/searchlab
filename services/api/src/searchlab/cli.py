@@ -14,7 +14,7 @@ from searchlab.domain.models import LabeledQuery, QueryClass, Split
 from searchlab.embeddings.cache import CacheMissError
 from searchlab.eval.runner import ScoreRow
 from searchlab.labeling.llm import JsonLlm
-from searchlab.services.eval_service import run_eval
+from searchlab.services.eval_service import DirtyTreeError, run_eval
 from searchlab.wiring import load_chunks, make_embedder, make_retrievers
 
 app = typer.Typer(no_args_is_help=True)
@@ -128,12 +128,14 @@ def tune(ks: str = "10,30,60,100") -> None:
 
 
 @app.command(name="eval")
-def eval_cmd(split: Split = "dev", rrf_k: int = 60) -> None:
-    """Evaluate all methods and write runs/<run_id>/."""
+def eval_cmd(split: Split = "dev", rrf_k: int = 60, allow_dirty: bool = False) -> None:
+    """Evaluate all methods and write runs/<corpus>/<run_id>/. Holdout needs a clean tree."""
     spec = _corpus()
-    outcome = run_eval(
-        spec.dir, make_embedder(spec.dir), split, rrf_k, runs_dir=spec.runs_dir, repo_root=REPO_ROOT
-    )
+    try:
+        outcome = run_eval(spec.dir, make_embedder(spec.dir), split, rrf_k, runs_dir=spec.runs_dir,
+                           repo_root=REPO_ROOT, corpus_label=spec.label, allow_dirty=allow_dirty)
+    except DirtyTreeError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     _print_scores(outcome.scores)
     typer.echo(f"\nrun written to {outcome.run_dir}")
 

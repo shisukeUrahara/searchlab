@@ -63,6 +63,20 @@ export interface EvalRun {
   scores: ScoreRow[];
   cases: CaseRow[];
 }
+export interface QueryPage {
+  items: LabeledQuery[];
+  total: number;
+  limit: number;
+  offset: number;
+  split_label: string;
+}
+export interface RunSummary {
+  id: string;
+  label: string;
+  split: "dev" | "test";
+  created: string;
+  n: number;
+}
 export interface Source {
   source_id: string;
   url: string;
@@ -105,9 +119,10 @@ export const api = {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ query, top_k: topK }),
     }),
-  queries: (split: "dev" | "test") => request<LabeledQuery[]>(`/queries?split=${split}`),
+  queries: (split: "dev" | "test", limit = 200, offset = 0) =>
+    request<QueryPage>(`/queries?split=${split}&limit=${limit}&offset=${offset}`),
   chunk: (id: string) => request<Chunk>(`/chunks/${encodeURIComponent(id)}`),
   sources: () => request<{ sources: Source[] }>("/sources"),
-  runs: () => request<string[]>("/eval-runs"),
+  runs: () => request<RunSummary[]>("/eval-runs"),
   run: (id: string) => request<EvalRun>(`/eval-runs/${encodeURIComponent(id)}`),
 };

@@ -11,7 +11,7 @@ export default function QueriesPage() {
   useEffect(() => {
     let live = true;
     api.queries(split)
-      .then((rows) => live && setData({ split, rows }))
+      .then((page) => live && setData({ split, rows: page.items }))
       .catch((error) => live && setData({ split, error }));
     return () => { live = false; };
   }, [split]);
