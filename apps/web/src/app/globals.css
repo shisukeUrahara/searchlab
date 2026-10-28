@@ -1,52 +1,106 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* SearchLab design tokens (mirrors the Stitch design system). */
 :root {
-  --canvas: #faf7f2;
+  --canvas: #f6f4ef;
   --surface: #ffffff;
-  --ink: #12233d;
-  --muted: #5b6b82;
-  --line: #e4dfd6;
-  --primary: #2556d9;
+  --surface-2: #efece5;
+  --ink: #0f1b2d;
+  --muted: #5b6779;
+  --line: #e3ded4;
+  --primary: #2f5bea;
   --primary-ink: #ffffff;
-  --success: #0f8f7e;
-  --success-bg: #e3f4f1;
-  --warn: #b7791f;
-  --warn-bg: #fdf1d8;
-  --danger: #b4443c;
-  --danger-bg: #f9e4e1;
+  --success: #0e9f8a;
+  --success-bg: #e2f4f0;
+  --warn: #a8700f;
+  --warn-bg: #fbf0d9;
+  --danger: #c2463d;
+  --danger-bg: #f9e3e0;
+  --m-bm25: #e0782e;
+  --m-dense: #3b6ff0;
+  --m-hybrid: #11a38b;
+  --shadow: 0 1px 2px rgb(15 27 45 / 0.04), 0 4px 16px rgb(15 27 45 / 0.04);
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: #0a0f1a;
+  --surface: #111827;
+  --surface-2: #172033;
+  --ink: #e6ebf5;
+  --muted: #93a0b4;
+  --line: #233047;
+  --primary: #6c8cff;
+  --primary-ink: #0a0f1a;
+  --success: #2cc7ae;
+  --success-bg: #0f2e2c;
+  --warn: #e3b14f;
+  --warn-bg: #2e2412;
+  --danger: #f07167;
+  --danger-bg: #331a1a;
+  --m-bm25: #f0924a;
+  --m-dense: #6c8cff;
+  --m-hybrid: #2cc7ae;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --color-success: var(--success);
   --color-success-bg: var(--success-bg);
   --color-warn: var(--warn);
   --color-warn-bg: var(--warn-bg);
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-m-bm25: var(--m-bm25);
+  --color-m-dense: var(--m-dense);
+  --color-m-hybrid: var(--m-hybrid);
+  --shadow-card: var(--shadow);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-geist), var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
+html,
 body {
   background: var(--canvas);
   color: var(--ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
