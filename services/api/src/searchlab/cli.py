@@ -138,7 +138,7 @@ def eval_cmd(split: Split = "dev", rrf_k: int = 60) -> None:
     typer.echo(f"\nrun written to {outcome.run_dir}")
 
 
-def _llm() -> JsonLlm:
+def _llm(model_id: str | None = None) -> JsonLlm:
     import os
 
     from openai import OpenAI
@@ -147,7 +147,7 @@ def _llm() -> JsonLlm:
 
     if not os.environ.get("OPENAI_API_KEY"):
         raise typer.BadParameter("OPENAI_API_KEY is required for labeling")
-    return OpenAIJsonLlm(OpenAI())
+    return OpenAIJsonLlm(OpenAI(), model_id) if model_id else OpenAIJsonLlm(OpenAI())
 
 
 def _write_queries(path: Path, queries: list[LabeledQuery]) -> None:
@@ -174,12 +174,12 @@ def draft_queries_cmd(exact: int = 40, paraphrase: int = 50, distractor: int = 3
 
 
 @app.command(name="judge-pool")
-def judge_pool_cmd(depth: int = 10) -> None:
+def judge_pool_cmd(depth: int = 10, model: str = "") -> None:
     """Pool every method's top-k per draft query, LLM-judge relevance, write dev/test splits."""
-    from searchlab.labeling.judge import judge_query, pool
+    from searchlab.labeling.judge import JUDGE_MODEL, judge_query, pool
 
     spec = _corpus()
-    llm = _llm()
+    llm = _llm(model or JUDGE_MODEL)
     chunks = load_chunks(spec.dir)
     retrievers = make_retrievers(chunks, make_embedder(spec.dir))
     judged: list[LabeledQuery] = []
@@ -192,7 +192,7 @@ def judge_pool_cmd(depth: int = 10) -> None:
     for split in ("dev", "test"):
         _write_queries(spec.dir / f"queries.{split}.jsonl", [q for q in judged if q.split == split])
     extra = sum(len(q.gold_chunk_ids) - 1 for q in judged)
-    typer.echo(f"judged {len(judged)} queries, {extra} extra relevant chunks added")
+    typer.echo(f"judged {len(judged)} queries with {llm.model_id}, {extra} extra relevant chunks")
 
 
 @app.command(name="review-sheet")

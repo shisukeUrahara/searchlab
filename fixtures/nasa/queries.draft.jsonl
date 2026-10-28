@@ -1,0 +1,120 @@
+{"query_id":"n001","text":"NPR 7120.5 documentation requirements","query_class":"exact_id","split":"dev","gold_chunk_ids":["79c033f3e4b91b33"]}
+{"query_id":"n002","text":"ETA-approved Technical Requirements Definition","query_class":"exact_id","split":"test","gold_chunk_ids":["df652d32e1a5d39b"]}
+{"query_id":"n003","text":"NPR 7150.2D software engineering acronyms","query_class":"exact_id","split":"test","gold_chunk_ids":["236b02f03f8a7a8e"]}
+{"query_id":"n004","text":"NPR 7120 Center Director responsibilities","query_class":"exact_id","split":"test","gold_chunk_ids":["f4ca4664791d43f0"]}
+{"query_id":"n005","text":"SEMP synchronization with master plans","query_class":"exact_id","split":"test","gold_chunk_ids":["e311432aa38d8678"]}
+{"query_id":"n006","text":"KDP D JCL update requirements","query_class":"exact_id","split":"dev","gold_chunk_ids":["f6182cd4880ecbdb"]}
+{"query_id":"n007","text":"ORR technical products list","query_class":"exact_id","split":"dev","gold_chunk_ids":["73ace270dafe1b5b"]}
+{"query_id":"n008","text":"SWE-194 defect resolution requirements","query_class":"exact_id","split":"test","gold_chunk_ids":["5ec701d54697e1db"]}
+{"query_id":"n009","text":"OMB Passback process NASA budget","query_class":"exact_id","split":"dev","gold_chunk_ids":["aae76a12cc7cc35e"]}
+{"query_id":"n010","text":"SEMP technical planning process","query_class":"exact_id","split":"dev","gold_chunk_ids":["762962bbc027ace1"]}
+{"query_id":"n011","text":"NPR 8705.2 human-rating certification","query_class":"exact_id","split":"dev","gold_chunk_ids":["ec3552f2880e875b"]}
+{"query_id":"n012","text":"VPIST Orion suit test","query_class":"exact_id","split":"test","gold_chunk_ids":["52f3afe78b1dbe9c"]}
+{"query_id":"n013","text":"NPR 7150.2D software engineering products","query_class":"exact_id","split":"test","gold_chunk_ids":["8b73c15c46ddff7b"]}
+{"query_id":"n014","text":"SRB readiness life-cycle review","query_class":"exact_id","split":"test","gold_chunk_ids":["f40a02b15d16d825"]}
+{"query_id":"n015","text":"SBU data rights management","query_class":"exact_id","split":"test","gold_chunk_ids":["4aa706181aef05ef"]}
+{"query_id":"n016","text":"program IMS summary schedule","query_class":"exact_id","split":"test","gold_chunk_ids":["f6ffb6cf7f476df3"]}
+{"query_id":"n017","text":"software product maturity HDBK","query_class":"exact_id","split":"test","gold_chunk_ids":["533f01a93a4baadc"]}
+{"query_id":"n018","text":"IEEE 1028 software peer reviews","query_class":"exact_id","split":"dev","gold_chunk_ids":["0e2829887ab722eb"]}
+{"query_id":"n019","text":"MDAA programmatic authority roles","query_class":"exact_id","split":"test","gold_chunk_ids":["527bb27b70f6a964"]}
+{"query_id":"n020","text":"Phase D activities NPR 7120.5","query_class":"exact_id","split":"test","gold_chunk_ids":["dce9a36401b2582e"]}
+{"query_id":"n021","text":"NPR control plan requirements","query_class":"exact_id","split":"test","gold_chunk_ids":["015a5a9972aebfc9"]}
+{"query_id":"n022","text":"ETA-approved Configuration Management process","query_class":"exact_id","split":"test","gold_chunk_ids":["f1db4fc2e341113c"]}
+{"query_id":"n023","text":"CIO authority on Class F software","query_class":"exact_id","split":"test","gold_chunk_ids":["3fb4dae1008127c2"]}
+{"query_id":"n024","text":"SPP program system engineering activities","query_class":"exact_id","split":"test","gold_chunk_ids":["4602651abb8d582a"]}
+{"query_id":"n025","text":"NEN Systems Engineering Community","query_class":"exact_id","split":"test","gold_chunk_ids":["83f79ce4839938cf"]}
+{"query_id":"n026","text":"Baseline requirements at SDR","query_class":"exact_id","split":"dev","gold_chunk_ids":["eaafdda305edae33"]}
+{"query_id":"n027","text":"NPR 2810.1 security responsibilities","query_class":"exact_id","split":"test","gold_chunk_ids":["c829ea4643990a9d"]}
+{"query_id":"n028","text":"CIO role in tailoring requirements","query_class":"exact_id","split":"test","gold_chunk_ids":["65cd1650c1349e2e"]}
+{"query_id":"n029","text":"SRB role in cost estimates","query_class":"exact_id","split":"dev","gold_chunk_ids":["679f5196a26dbcff"]}
+{"query_id":"n030","text":"role of CMO in configuration management","query_class":"exact_id","split":"test","gold_chunk_ids":["eeb388fcb88685c3"]}
+{"query_id":"n031","text":"NPR 1600.1 security requirements","query_class":"exact_id","split":"test","gold_chunk_ids":["19e3328eae9646bd"]}
+{"query_id":"n032","text":"TBD items disposition plan","query_class":"exact_id","split":"dev","gold_chunk_ids":["8f0ad322922323d9"]}
+{"query_id":"n033","text":"SWE-176 software classification records","query_class":"exact_id","split":"dev","gold_chunk_ids":["6ad6a375c6878962"]}
+{"query_id":"n034","text":"SMA Technical Authority roles","query_class":"exact_id","split":"test","gold_chunk_ids":["beb314150b2f3510"]}
+{"query_id":"n035","text":"SEMP technical planning outputs","query_class":"exact_id","split":"test","gold_chunk_ids":["bff7c27160a2fe5e"]}
+{"query_id":"n036","text":"CRM process risk management","query_class":"exact_id","split":"dev","gold_chunk_ids":["b1fb383e53d045dc"]}
+{"query_id":"n037","text":"TRL definition and success criteria","query_class":"exact_id","split":"test","gold_chunk_ids":["082581f256a87ea3"]}
+{"query_id":"n038","text":"NASA HDBK software defect management","query_class":"exact_id","split":"dev","gold_chunk_ids":["7d0f1703ea3207ab"]}
+{"query_id":"n039","text":"NPD 7120.4 NASA Engineering Policy","query_class":"exact_id","split":"test","gold_chunk_ids":["051bbcbe2268c7c1"]}
+{"query_id":"n040","text":"TPM estimation in requirements management","query_class":"exact_id","split":"test","gold_chunk_ids":["3fbc0b34efedc93b"]}
+{"query_id":"n041","text":"How does NASA ensure environmental protection during project planning and execution?","query_class":"paraphrase","split":"test","gold_chunk_ids":["aea9f2e7e9161530"]}
+{"query_id":"n042","text":"What is required before launching a spacecraft regarding frequency use approval?","query_class":"paraphrase","split":"test","gold_chunk_ids":["7c59da44fc7694b7"]}
+{"query_id":"n043","text":"How should a project manager handle software test plans and code coverage tracking?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["a08b4fe67966ff2e"]}
+{"query_id":"n044","text":"What activities are involved in Project Phase B for preliminary design and technology completion?","query_class":"paraphrase","split":"test","gold_chunk_ids":["dc45b6fa5cb24324"]}
+{"query_id":"n045","text":"What are some key NASA documents and presentations on cost and risk management in space missions?","query_class":"paraphrase","split":"test","gold_chunk_ids":["839626f4cf628be9"]}
+{"query_id":"n046","text":"What is the program's approach for acquiring and managing resources and services?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["ca29d0b2fff810f2"]}
+{"query_id":"n047","text":"What activities must Center Directors perform according to the technical team responsibilities section?","query_class":"paraphrase","split":"test","gold_chunk_ids":["097dbad3724635b9"]}
+{"query_id":"n048","text":"How does software engineering ensure a product meets user needs and requirements?","query_class":"paraphrase","split":"test","gold_chunk_ids":["b3eb4a548020a076"]}
+{"query_id":"n049","text":"What types of work does Earned Value Management apply to in NASA projects?","query_class":"paraphrase","split":"test","gold_chunk_ids":["51b879f1d742e5af"]}
+{"query_id":"n050","text":"What methods are used to confirm the quality of different system components?","query_class":"paraphrase","split":"test","gold_chunk_ids":["ed58ed88da12e28d"]}
+{"query_id":"n051","text":"What key elements should be included in a project's acquisition plan?","query_class":"paraphrase","split":"test","gold_chunk_ids":["90bb909846c0bd7f"]}
+{"query_id":"n052","text":"What is a quantitative measure used to ensure system objectives are achieved?","query_class":"paraphrase","split":"test","gold_chunk_ids":["65aabcea952a9404"]}
+{"query_id":"n053","text":"How should a project manager document and maintain a software timeline?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["ed8f9ba29dba9f58"]}
+{"query_id":"n054","text":"How are project managers certified and how is project performance monitored and controlled?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["a355b801831f32ac"]}
+{"query_id":"n055","text":"What is the purpose of an engineering unit in product development?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["6a3df57d76ffe420"]}
+{"query_id":"n056","text":"How does NASA handle formal disagreements within project teams?","query_class":"paraphrase","split":"test","gold_chunk_ids":["ffcffe79dcb80455"]}
+{"query_id":"n057","text":"What are the responsibilities of the technical team regarding equipment readiness and safety documentation?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["a4618c5a2bc18983"]}
+{"query_id":"n058","text":"How should a project manager handle software upkeep and record keeping during maintenance?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["4c4c184d26813ea3"]}
+{"query_id":"n059","text":"How should the project WBS levels be organized for space flight projects?","query_class":"paraphrase","split":"test","gold_chunk_ids":["905c34835da1ebb4"]}
+{"query_id":"n060","text":"How do you prepare for combining parts into the final product?","query_class":"paraphrase","split":"test","gold_chunk_ids":["564c2f8ccc49fa50"]}
+{"query_id":"n061","text":"What confidence levels are required for cost and schedule in large single-project programs?","query_class":"paraphrase","split":"test","gold_chunk_ids":["d5d99ad1014347c3"]}
+{"query_id":"n062","text":"How should program managers handle the process of delivering a verified product to the next customer?","query_class":"paraphrase","split":"test","gold_chunk_ids":["3af6efd44a2aadc8"]}
+{"query_id":"n063","text":"How should projects plan to check and approve off-the-shelf software components?","query_class":"paraphrase","split":"test","gold_chunk_ids":["4bc78bbc392de001"]}
+{"query_id":"n064","text":"What key elements are included in the program plan appendix for each project?","query_class":"paraphrase","split":"test","gold_chunk_ids":["58d97e03cc5346e3"]}
+{"query_id":"n065","text":"How is a design solution checked against system requirements and constraints?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["929aab9cbb5615a5"]}
+{"query_id":"n066","text":"Who outside NASA will help with the project and what are their roles?","query_class":"paraphrase","split":"test","gold_chunk_ids":["cbe920e9b213474e"]}
+{"query_id":"n067","text":"What is included in the certification package for verifying a design's readiness?","query_class":"paraphrase","split":"test","gold_chunk_ids":["f991a49af017e96d"]}
+{"query_id":"n068","text":"How should project managers verify and test software related to safety hazards?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["bada4ca3a27691cd"]}
+{"query_id":"n069","text":"How does a risk event impact activity duration and cost in project simulations?","query_class":"paraphrase","split":"test","gold_chunk_ids":["ab17b7dbad1e21b7"]}
+{"query_id":"n070","text":"What is a solicitation in the context of NASA contract awards?","query_class":"paraphrase","split":"test","gold_chunk_ids":["29867a9026c48b6a"]}
+{"query_id":"n071","text":"How are tailoring approvals and requirement exceptions managed in NASA program plans?","query_class":"paraphrase","split":"test","gold_chunk_ids":["84fba42ad52d5f9d"]}
+{"query_id":"n072","text":"What responsibilities does the technical team have for monitoring program progress and risks?","query_class":"paraphrase","split":"test","gold_chunk_ids":["82229f8d16980ed5"]}
+{"query_id":"n073","text":"Who is responsible for ensuring NASA software sharing rights and compliance?","query_class":"paraphrase","split":"test","gold_chunk_ids":["0c029799e9d4038b"]}
+{"query_id":"n074","text":"What steps ensure safe shutdown and final delivery of space flight systems and assets?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["c7b1a2b29b85fcc8"]}
+{"query_id":"n075","text":"How is product validation documented and what information is included in the report?","query_class":"paraphrase","split":"test","gold_chunk_ids":["543067947a00d924"]}
+{"query_id":"n076","text":"What are the update requirements for NASA program plan control documents at different review stages?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["9aaf0e38095787d2"]}
+{"query_id":"n077","text":"Which NASA policies and manuals are referenced for program and project management responsibilities?","query_class":"paraphrase","split":"test","gold_chunk_ids":["21d20b6b2d0a408b"]}
+{"query_id":"n078","text":"How does software architecture influence the quality and maintenance of a software system?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["53f7c428810aa2af"]}
+{"query_id":"n079","text":"How does a NASA initiative adapt when new missions or capabilities are added?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["bbc5f365a5ef47f9"]}
+{"query_id":"n080","text":"What is the purpose of a SEMP in managing a NASA project?","query_class":"paraphrase","split":"test","gold_chunk_ids":["2ea023f19565a1c4"]}
+{"query_id":"n081","text":"What are key programmatic and technical indicators to track during project formulation?","query_class":"paraphrase","split":"test","gold_chunk_ids":["9368b657765b88a5"]}
+{"query_id":"n082","text":"What updated plans and documents are required for managing technical risks and schedules?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["8e2043d5d3d4f7bd"]}
+{"query_id":"n083","text":"Who is responsible for managing and auditing software configuration items in a project?","query_class":"paraphrase","split":"test","gold_chunk_ids":["f2b00fe092a3df5e"]}
+{"query_id":"n084","text":"How does NASA incorporate risk and budgeting in project cost and schedule planning?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["0eb228946ade726b"]}
+{"query_id":"n085","text":"How can system engineers reduce costs by reusing products between Phase D and Phase E?","query_class":"paraphrase","split":"test","gold_chunk_ids":["5d6e4aac52e3d8b8"]}
+{"query_id":"n086","text":"What are the required plans for managing technical, safety, and security aspects in NASA programs?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["3f9a83084c2a580c"]}
+{"query_id":"n087","text":"Who reviews the products and plans during NASA life-cycle and technical assessments?","query_class":"paraphrase","split":"test","gold_chunk_ids":["cae8d521c4e14b3e"]}
+{"query_id":"n088","text":"Who must approve changes to requirements marked as mandatory in software projects?","query_class":"paraphrase","split":"test","gold_chunk_ids":["12b8d44356e34a14"]}
+{"query_id":"n089","text":"What documentation supports cost and schedule estimates for large NASA projects?","query_class":"paraphrase","split":"test","gold_chunk_ids":["e3e792759405129b"]}
+{"query_id":"n090","text":"How does NASA coordinate technical work with external teams and manage progress?","query_class":"paraphrase","split":"dev","gold_chunk_ids":["03125858a510ed20"]}
+{"query_id":"n091","text":"What plans are required for managing schedule, cost, and risk during Phase A?","query_class":"distractor","split":"test","gold_chunk_ids":["b1b5d0f76a02b58a"]}
+{"query_id":"n092","text":"How do program/project teams assess progress and resolve technical issues early?","query_class":"distractor","split":"dev","gold_chunk_ids":["bb4d6e9c957f2221"]}
+{"query_id":"n093","text":"How should project managers track and manage software non-conformances and defects?","query_class":"distractor","split":"test","gold_chunk_ids":["1e60219d0e8b055f"]}
+{"query_id":"n094","text":"What does the Human Rating Certification Program focus on during project formulation?","query_class":"distractor","split":"test","gold_chunk_ids":["fefb2aae1de89d4b"]}
+{"query_id":"n095","text":"How should decisions during original design development be documented for future assessments?","query_class":"distractor","split":"test","gold_chunk_ids":["bf9320c917dfbf63"]}
+{"query_id":"n096","text":"How does NASA organize programmatic and institutional authorities in space flight projects?","query_class":"distractor","split":"dev","gold_chunk_ids":["bc6a34c0e193f7cc"]}
+{"query_id":"n097","text":"What are key production support criteria ensuring manufacturability and compliance in NASA projects?","query_class":"distractor","split":"test","gold_chunk_ids":["d49a51b8fb2bca02"]}
+{"query_id":"n098","text":"Who must approve software testing conducted outside the development team?","query_class":"distractor","split":"test","gold_chunk_ids":["c62c1d980b396fec"]}
+{"query_id":"n099","text":"How do projects update technology development plans during concept and technology development phase?","query_class":"distractor","split":"test","gold_chunk_ids":["ec8659ba46cadd27"]}
+{"query_id":"n100","text":"What is the purpose of the appendices in the NASA systems engineering handbook?","query_class":"distractor","split":"test","gold_chunk_ids":["acd2c62e6a8cdcab"]}
+{"query_id":"n101","text":"How does the Project Plan relate to the Formulation Agreement in project execution?","query_class":"distractor","split":"test","gold_chunk_ids":["aeeb1df6ce8ec665"]}
+{"query_id":"n102","text":"How does NASA ensure a supportive environment for technical excellence and career growth?","query_class":"distractor","split":"test","gold_chunk_ids":["60ba00884638e257"]}
+{"query_id":"n103","text":"How should project managers analyze and share software measurement data at NASA?","query_class":"distractor","split":"dev","gold_chunk_ids":["ae23b52d3b026473"]}
+{"query_id":"n104","text":"What does 'Derived Requirements' mean in NASA systems engineering definitions?","query_class":"distractor","split":"test","gold_chunk_ids":["3946094168de6a7e"]}
+{"query_id":"n105","text":"What forms can the verification and validation matrices take in project documentation?","query_class":"distractor","split":"test","gold_chunk_ids":["8899a14a872cb3b8"]}
+{"query_id":"n106","text":"What are the key mission objectives and technical approaches for NASA mission design?","query_class":"distractor","split":"dev","gold_chunk_ids":["0e74451c9688ab31"]}
+{"query_id":"n107","text":"What documents support the security plan in NASA's technical team responsibilities?","query_class":"distractor","split":"dev","gold_chunk_ids":["8529bf5931252a84"]}
+{"query_id":"n108","text":"Who is responsible for reporting the Center's software engineering status upon request?","query_class":"distractor","split":"test","gold_chunk_ids":["658adbf524c9c569"]}
+{"query_id":"n109","text":"How does the project team develop risk-informed schedule and cost estimates by SRR?","query_class":"distractor","split":"test","gold_chunk_ids":["01f20993345ee4c0"]}
+{"query_id":"n110","text":"What verification activities are performed on lower-level end items during system development?","query_class":"distractor","split":"test","gold_chunk_ids":["963c8dbab21bca4d"]}
+{"query_id":"n111","text":"Who must approve changes to the program requirements baseline documents?","query_class":"distractor","split":"dev","gold_chunk_ids":["4d7ce51cdba6dc6f"]}
+{"query_id":"n112","text":"What role does the NASA technical team play in contract completion reviews?","query_class":"distractor","split":"test","gold_chunk_ids":["8ee14df2a60d7888"]}
+{"query_id":"n113","text":"Who is responsible for designating SMA TAs and overseeing software assurance activities?","query_class":"distractor","split":"dev","gold_chunk_ids":["fa3b46d4551b73ce"]}
+{"query_id":"n114","text":"What preliminary technical documents are developed before the Mission Concept Review (MCR)?","query_class":"distractor","split":"test","gold_chunk_ids":["e8c99ea6e01fe484"]}
+{"query_id":"n115","text":"How does configuration control impact the validity of system analysis results?","query_class":"distractor","split":"dev","gold_chunk_ids":["7e9489f6dde80ae0"]}
+{"query_id":"n116","text":"How does the program coordinate roles of NASA and external organizations in integration?","query_class":"distractor","split":"test","gold_chunk_ids":["c74da8b961541d36"]}
+{"query_id":"n117","text":"How do program managers ensure product validation meets stakeholder expectations and technical requirements?","query_class":"distractor","split":"test","gold_chunk_ids":["3c8f6fcb55001d36"]}
+{"query_id":"n118","text":"What is the purpose of NASA's directive on software engineering requirements across Centers?","query_class":"distractor","split":"test","gold_chunk_ids":["afcd2f94f4629e98"]}
+{"query_id":"n119","text":"Who can approve tailoring of Technical Authority requirements at the program or project level?","query_class":"distractor","split":"dev","gold_chunk_ids":["1265d2c201395db4"]}
+{"query_id":"n120","text":"What are the key elements included in the product verification process description?","query_class":"distractor","split":"dev","gold_chunk_ids":["f785f907aab90f70"]}

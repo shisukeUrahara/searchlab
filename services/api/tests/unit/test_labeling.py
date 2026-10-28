@@ -74,8 +74,16 @@ def test_pool_is_union_without_duplicates() -> None:
 def test_judge_keeps_seed_and_adds_llm_relevant() -> None:
     q = LabeledQuery(query_id="n001", text="x", query_class="paraphrase", split="test",
                      gold_chunk_ids=(CHUNKS[0].chunk_id,))
-    llm = FakeLlm({"relevant": [2, "1", "junk", 99]})
+    llm = FakeLlm({"grades": {"1": 2, "2": 2, "3": 1, "junk": 2, "4": 7}})
     updated, js = judge_query(q, CHUNKS[:4], llm)
     assert updated.gold_chunk_ids == (CHUNKS[0].chunk_id, CHUNKS[1].chunk_id, CHUNKS[2].chunk_id)
     assert sum(j.relevant for j in js) == 3 and js[0].source == "seed"
+    assert [j.grade for j in js] == [None, 2, 2, 1]  # grade 1 is not gold
     assert CHUNKS[0].text[:20] not in llm.prompts[0]  # seed chunk is not re-judged
+
+
+def test_malformed_grades_count_as_irrelevant() -> None:
+    q = LabeledQuery(query_id="n1", text="x", query_class="paraphrase", split="test",
+                     gold_chunk_ids=(CHUNKS[0].chunk_id,))
+    updated, _ = judge_query(q, CHUNKS[:3], FakeLlm({"grades": "oops"}))
+    assert updated.gold_chunk_ids == q.gold_chunk_ids

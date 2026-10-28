@@ -16,9 +16,16 @@ from searchlab.labeling.llm import JsonLlm
 POOL_DEPTH = 10
 SNIPPET = 700
 
+JUDGE_MODEL = "gpt-4.1-2025-04-14"
 SYSTEM = (
-    "You judge search results. A passage is relevant only if it directly answers or states "
-    "the information the query asks for. Reply with JSON {\"relevant\": [numbers]}."
+    "You are a strict relevance judge for a search benchmark over NASA handbooks. "
+    "Grade each numbered passage for the query:\n"
+    "2 = the passage itself states the specific answer or the exact item the query names "
+    "(for an identifier query, the passage must contain that identifier and say what it is "
+    "or requires);\n"
+    "1 = same general topic but does not answer;\n"
+    "0 = unrelated.\n"
+    "Most passages should be 0 or 1. Reply with JSON {\"grades\": {\"<number>\": 0|1|2}}."
 )
 
 
@@ -27,6 +34,7 @@ class Judgment(BaseModel):
     chunk_id: str
     relevant: bool
     source: str  # "seed" or "llm"
+    grade: int | None = None  # LLM grade 0-2; None for the seed chunk
 
 
 def pool(query: str, retrievers: Mapping[str, Retriever], depth: int = POOL_DEPTH) -> list[Chunk]:
@@ -50,14 +58,25 @@ def judge_query(
         f"[{i}] {c.heading}\n{c.text[:SNIPPET]}" for i, c in enumerate(others, start=1)
     )
     reply = llm.complete_json(SYSTEM, f"Query: {q.text}\n\nPassages:\n{listing}")
-    raw = reply.get("relevant", [])
-    picked = {int(i) for i in raw if isinstance(i, int | str) and str(i).isdigit()}
+    grades = _grades(reply.get("grades"))
     extra: list[str] = []
     for i, c in enumerate(others, start=1):
-        rel = i in picked
+        grade = grades.get(i, 0)
+        rel = grade == 2
         judgments.append(Judgment(query_id=q.query_id, chunk_id=c.chunk_id, relevant=rel,
-                                  source="llm"))
+                                  source="llm", grade=grade))
         if rel:
             extra.append(c.chunk_id)
     updated = q.model_copy(update={"gold_chunk_ids": (*q.gold_chunk_ids, *extra)})
     return updated, judgments
+
+
+def _grades(raw: object) -> dict[int, int]:
+    """Parse {"1": 2, "2": 0} defensively; anything malformed counts as 0."""
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[int, int] = {}
+    for k, v in raw.items():
+        if str(k).isdigit() and v in (0, 1, 2):
+            out[int(k)] = int(v)
+    return out
