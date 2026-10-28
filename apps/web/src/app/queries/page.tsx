@@ -108,10 +108,10 @@ export default function QueriesPage() {
               </button>
             ))}
           </div>
-          <label className="relative flex h-10 items-center gap-2 rounded-lg border border-line bg-canvas px-3 focus-within:border-primary md:w-80">
+          <label className="relative flex h-10 items-center gap-2 rounded-lg border border-line bg-canvas px-3 transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25 md:w-80">
             <Search className="size-4 text-muted" aria-hidden />
             <span className="sr-only">Filter queries</span>
-            <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Filter by text…" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+            <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Filter by text…" className="min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:outline-none" />
           </label>
         </div>
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Query class">

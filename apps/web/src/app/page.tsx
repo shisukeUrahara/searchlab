@@ -104,7 +104,7 @@ export default function SearchPage() {
         <label htmlFor="q" className="sr-only">
           Question or identifier
         </label>
-        <div className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-4 focus-within:border-primary">
+        <div className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-4 transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
           <SearchCode className="size-5 shrink-0 text-muted" aria-hidden />
           <input
             id="q"
@@ -113,7 +113,7 @@ export default function SearchPage() {
             placeholder="Ask the handbooks, or type an identifier like KDP C or SWE-139"
             maxLength={500}
             autoComplete="off"
-            className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted"
+            className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted focus-visible:outline-none"
           />
           {match && searched === query && (
             <span className="hidden rounded-md border border-line px-2 py-0.5 font-mono text-xs text-muted sm:inline">

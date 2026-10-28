@@ -162,7 +162,7 @@ export default function MapPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="e.g. KDP C entrance criteria"
-                className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-canvas px-3 text-sm outline-none focus:border-primary"
+                className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-canvas px-3 text-sm outline-none transition-shadow focus:border-primary focus:ring-2 focus:ring-primary/25 focus-visible:outline-none"
               />
               <button type="submit" disabled={!query.trim() || searching} aria-label="Highlight" className="grid size-10 place-items-center rounded-lg bg-primary text-primary-ink disabled:opacity-50">
                 <Search className="size-4" aria-hidden />
