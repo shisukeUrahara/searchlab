@@ -1,0 +1,74 @@
+{
+  "sources": [
+    {
+      "source_id": "nasa/se-handbook",
+      "company_reference": "NASA",
+      "url": "https://www.nasa.gov/wp-content/uploads/2018/09/nasa_systems_engineering_handbook_0.pdf",
+      "repo_path": "",
+      "repo_commit": "",
+      "doc_number": "NASA/SP-2016-6105 Rev2",
+      "pages": 297,
+      "retrieved_at_utc": "2026-10-28T07:24:11Z",
+      "license": "US Government work (17 U.S.C. 105); not affiliated with or endorsed by NASA",
+      "transformation": "pypdf text; running headers/footers removed; front matter and references skipped",
+      "sha256": "8eeb4887a4dc57a23049da7dd2ed556833cf98e214b240468d987873164ff688",
+      "file": "nasa_systems_engineering_handbook_0.pdf"
+    },
+    {
+      "source_id": "nasa/pm-handbook",
+      "company_reference": "NASA",
+      "url": "https://ntrs.nasa.gov/api/citations/20150000400/downloads/20150000400.pdf",
+      "repo_path": "",
+      "repo_commit": "",
+      "doc_number": "NASA/SP-2014-3705",
+      "pages": 486,
+      "retrieved_at_utc": "2026-10-28T07:24:11Z",
+      "license": "US Government work (17 U.S.C. 105); not affiliated with or endorsed by NASA",
+      "transformation": "pypdf text; running headers/footers removed; front matter and references skipped",
+      "sha256": "d5885de887f6e1c90eff21cfdcf239a013cc4358f0e997938c79264ef5c6becd",
+      "file": "20150000400.pdf"
+    },
+    {
+      "source_id": "nasa/npr-7120-5f",
+      "company_reference": "NASA",
+      "url": "https://nodis3.gsfc.nasa.gov/npg_img/N_PR_7120_005F_/N_PR_7120_005F_.pdf",
+      "repo_path": "",
+      "repo_commit": "",
+      "doc_number": "NPR 7120.5F",
+      "pages": 149,
+      "retrieved_at_utc": "2026-10-28T07:24:11Z",
+      "license": "US Government work (17 U.S.C. 105); not affiliated with or endorsed by NASA",
+      "transformation": "pypdf text; running headers/footers removed; front matter and references skipped",
+      "sha256": "945dfb89d7b0f778a61979e0d116529de2a10e78e04ca16356a5a9b9a445abdf",
+      "file": "N_PR_7120_005F_.pdf"
+    },
+    {
+      "source_id": "nasa/npr-7123-1d",
+      "company_reference": "NASA",
+      "url": "https://nodis3.gsfc.nasa.gov/npg_img/N_PR_7123_001D_/N_PR_7123_001D_.pdf",
+      "repo_path": "",
+      "repo_commit": "",
+      "doc_number": "NPR 7123.1D",
+      "pages": 138,
+      "retrieved_at_utc": "2026-10-28T07:24:11Z",
+      "license": "US Government work (17 U.S.C. 105); not affiliated with or endorsed by NASA",
+      "transformation": "pypdf text; running headers/footers removed; front matter and references skipped",
+      "sha256": "686b0d55d492bffe7e750a15523f339c5de41cb253499828b4fe9f2924810e40",
+      "file": "N_PR_7123_001D_.pdf"
+    },
+    {
+      "source_id": "nasa/npr-7150-2d",
+      "company_reference": "NASA",
+      "url": "https://nodis3.gsfc.nasa.gov/npg_img/N_PR_7150_002D_/N_PR_7150_002D_.pdf",
+      "repo_path": "",
+      "repo_commit": "",
+      "doc_number": "NPR 7150.2D",
+      "pages": 89,
+      "retrieved_at_utc": "2026-10-28T07:24:11Z",
+      "license": "US Government work (17 U.S.C. 105); not affiliated with or endorsed by NASA",
+      "transformation": "pypdf text; running headers/footers removed; front matter and references skipped",
+      "sha256": "1a5b7f9b0b0141e88374adf7a21a4d6ced0b29c221ca89a0a514f495d6532802",
+      "file": "N_PR_7150_002D_.pdf"
+    }
+  ]
+}

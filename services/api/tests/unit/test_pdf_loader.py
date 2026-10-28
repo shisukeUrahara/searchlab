@@ -62,3 +62,9 @@ def test_pack_lines_respects_cap_and_keeps_all_text() -> None:
     parts = pack_lines(text, 300)
     assert all(len(p) <= 300 for p in parts)
     assert "\n".join(parts) == text
+
+
+def test_children_of_skipped_outline_entries_are_skipped() -> None:
+    text, starts = join_pages(["2.0 Body\nreal text", "more"])
+    entries = [(0, "2.0 Body", 0), (0, "Figures", 0), (1, "Figure 4-8 Life Cycle", 1)]
+    assert [m.heading for m in outline_markers(entries, text, starts)] == ["2.0 Body"]

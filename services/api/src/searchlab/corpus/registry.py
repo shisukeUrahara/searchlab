@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from searchlab.corpus import pipeline
+from searchlab.corpus import nasa, pipeline
 from searchlab.corpus.manifest import Manifest
 from searchlab.domain.models import Chunk
 
@@ -44,6 +44,13 @@ CORPORA: dict[str, CorpusSpec] = {
         snapshot_subdir="snapshot",
         fetch=pipeline.fetch_snapshot,
         build_chunks=pipeline.build_chunks,
+    ),
+    "nasa": CorpusSpec(
+        name="nasa",
+        label="NASA handbooks",
+        snapshot_subdir="pdf",
+        fetch=nasa.fetch_nasa,
+        build_chunks=nasa.build_nasa_chunks,
     ),
 }
 

@@ -15,7 +15,8 @@ from pypdf import PdfReader
 
 RUNNING_LINE_SHARE = 0.3
 SKIP_TITLES = ("title page", "table of contents", "table of figures", "table of tables",
-               "table of boxes", "contents")
+               "table of boxes", "contents", "bibliography", "references", "index",
+               "figures", "tables", "list of figures", "list of tables")
 
 # "Chapter 6. Systems Engineering Management Plan" or "6.1 Systems Engineering Management Plan
 # Function". Three-level numbers (6.1.1) are requirement paragraphs in NPRs, not headings.
@@ -109,10 +110,15 @@ def outline_markers(
     """
     markers: list[Marker] = []
     path: list[str] = []
+    skip_below: int | None = None  # depth of a skipped entry; its children are skipped too
     for depth, title, page in entries:
         title = re.sub(r"\s+", " ", title).strip()
         path = [*path[:depth], title]
+        if skip_below is not None and depth > skip_below:
+            continue
+        skip_below = None
         if title.lower().startswith(SKIP_TITLES):
+            skip_below = depth
             continue
         start = starts[page]
         end = starts[page + 1] if page + 1 < len(starts) else len(text)

@@ -12,8 +12,10 @@ class SourceEntry(BaseModel):
     source_id: str
     company_reference: str
     url: str
-    repo_path: str
-    repo_commit: str
+    repo_path: str = ""
+    repo_commit: str = ""
+    doc_number: str = ""
+    pages: int | None = None
     retrieved_at_utc: str
     license: str
     transformation: str
