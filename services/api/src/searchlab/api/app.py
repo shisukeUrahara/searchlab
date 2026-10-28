@@ -38,6 +38,8 @@ class AppDeps:
     run_eval: EvalFn
     corpus_label: str = ""
     graph_path: Path | None = None
+    embedding_model: str = ""
+    embedding_dims: int = 0
 
 
 def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
@@ -92,6 +94,8 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
                             heading=h.chunk.heading,
                             snippet=h.chunk.text[:SNIPPET],
                             url=h.chunk.url,
+                            source_id=h.chunk.source_id,
+                            page=h.chunk.page,
                         )
                         for h in r.hits
                     ],
@@ -102,7 +106,19 @@ def create_app(deps: AppDeps, cors_origins: list[str] | None = None) -> FastAPI:
 
     @app.get("/corpus")
     def corpus() -> dict[str, Any]:
-        return {"label": deps.corpus_label, "chunk_count": deps.search.chunk_count}
+        manifest = read_manifest(deps.corpus_dir / "source_manifest.json")
+        counts = deps.search.chunk_counts_by_source()
+        return {
+            "label": deps.corpus_label,
+            "chunk_count": deps.search.chunk_count,
+            "embedding_model": deps.embedding_model,
+            "embedding_dims": deps.embedding_dims,
+            "docs": [
+                {"source_id": s.source_id, "doc_number": s.doc_number, "url": s.url,
+                 "pages": s.pages, "chunks": counts.get(s.source_id, 0)}
+                for s in manifest.sources
+            ],
+        }
 
     @app.get("/queries")
     def queries(

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { MetricTable } from "./MetricTable";
-import { RankingColumn } from "./RankingColumn";
+import { MethodColumn } from "./search/MethodColumn";
 import { Empty, ErrorBox, Loading } from "./StateViews";
 import { ApiError, type MethodResult, type ScoreRow } from "@/lib/api";
 
@@ -9,38 +9,46 @@ const result: MethodResult = {
   method: "bm25",
   latency_ms: 1.234,
   hits: [
-    { rank: 1, score: 9.5, chunk_id: "a", title: "T", heading: "Headers", snippet: "x-ratelimit", url: "u" },
-    { rank: 2, score: 4.1, chunk_id: "b", title: "T", heading: "Other", snippet: "foo", url: "u" },
+    { rank: 1, score: 9.5, chunk_id: "a", title: "T", heading: "Headers", snippet: "x-ratelimit", url: "u", source_id: "nasa/npr-7123-1d", page: 41 },
+    { rank: 2, score: 4.1, chunk_id: "b", title: "T", heading: "Other", snippet: "foo", url: "u", source_id: "nasa/x", page: null },
   ],
 };
 
-describe("RankingColumn", () => {
+const docs = { "nasa/npr-7123-1d": "NPR 7123.1D" };
+
+describe("MethodColumn", () => {
   it("marks the expected chunk and reports its rank", () => {
-    render(<RankingColumn result={result} goldIds={["b"]} onOpen={() => {}} />);
-    expect(screen.getByText("Expected chunk found at rank 2")).toBeInTheDocument();
-    expect(screen.getAllByText("✓ expected")).toHaveLength(1);
+    render(<MethodColumn docNumbers={docs} result={result} goldIds={["b"]} onOpen={() => {}} />);
+    expect(screen.getByText("Expected passage at rank 2")).toBeInTheDocument();
+    expect(screen.getAllByText("expected")).toHaveLength(1);
   });
 
   it("says when the expected chunk is missing", () => {
-    render(<RankingColumn result={result} goldIds={["zzz"]} onOpen={() => {}} />);
-    expect(screen.getByText("Expected chunk not in these results")).toBeInTheDocument();
+    render(<MethodColumn docNumbers={docs} result={result} goldIds={["zzz"]} onOpen={() => {}} />);
+    expect(screen.getByText("Expected passage not in these results")).toBeInTheDocument();
   });
 
   it("shows no verdict banner without a labeled query", () => {
-    render(<RankingColumn result={result} goldIds={[]} onOpen={() => {}} />);
-    expect(screen.queryByText(/Expected chunk/)).toBeNull();
+    render(<MethodColumn docNumbers={docs} result={result} goldIds={[]} onOpen={() => {}} />);
+    expect(screen.queryByText(/Expected passage/)).toBeNull();
   });
 
   it("opens a chunk on click", () => {
     const onOpen = vi.fn();
-    render(<RankingColumn result={result} goldIds={[]} onOpen={onOpen} />);
+    render(<MethodColumn docNumbers={docs} result={result} goldIds={[]} onOpen={onOpen} />);
     fireEvent.click(screen.getByText("Headers"));
     expect(onOpen).toHaveBeenCalledWith("a");
   });
 
+  it("shows document number and page, falls back to source id", () => {
+    render(<MethodColumn docNumbers={docs} result={result} goldIds={[]} onOpen={() => {}} />);
+    expect(screen.getByText("NPR 7123.1D · p.41")).toBeInTheDocument();
+    expect(screen.getByText("x")).toBeInTheDocument();
+  });
+
   it("handles empty results", () => {
-    render(<RankingColumn result={{ ...result, hits: [] }} goldIds={[]} onOpen={() => {}} />);
-    expect(screen.getByText("No matching chunks.")).toBeInTheDocument();
+    render(<MethodColumn docNumbers={docs} result={{ ...result, hits: [] }} goldIds={[]} onOpen={() => {}} />);
+    expect(screen.getByText("No matching passages.")).toBeInTheDocument();
   });
 });
 

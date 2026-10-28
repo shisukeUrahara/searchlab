@@ -29,6 +29,12 @@ class SearchService:
     def chunk_count(self) -> int:
         return len(self._chunks)
 
+    def chunk_counts_by_source(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for c in self._chunks.values():
+            counts[c.source_id] = counts.get(c.source_id, 0) + 1
+        return counts
+
     def search(self, query: str, methods: Sequence[str], top_k: int) -> list[MethodResult]:
         out: list[MethodResult] = []
         for m in methods:

@@ -27,6 +27,8 @@ class HitOut(BaseModel):
     heading: str
     snippet: str
     url: str
+    source_id: str
+    page: int | None = None
 
 
 class MethodOut(BaseModel):

@@ -40,6 +40,7 @@ def test_search_returns_three_ranked_columns(client: TestClient) -> None:
     for m in body["results"]:
         assert len(m["hits"]) == 3 and [h["rank"] for h in m["hits"]] == [1, 2, 3]
         assert m["latency_ms"] >= 0
+        assert all(h["source_id"].startswith("github-docs/") for h in m["hits"])
 
 
 def test_search_validation_errors_use_stable_shape(client: TestClient) -> None:
@@ -61,7 +62,9 @@ def test_chunk_lookup_and_404(client: TestClient) -> None:
 
 def test_sources_and_corpus(client: TestClient) -> None:
     assert len(client.get("/sources").json()["sources"]) == 6
-    assert client.get("/corpus").json() == {"label": "GitHub Docs (v1)", "chunk_count": 78}
+    corpus = client.get("/corpus").json()
+    assert corpus["label"] == "GitHub Docs (v1)" and corpus["chunk_count"] == 78
+    assert len(corpus["docs"]) == 6 and sum(d["chunks"] for d in corpus["docs"]) == 78
 
 
 def test_queries_are_paginated_and_filtered(client: TestClient) -> None:

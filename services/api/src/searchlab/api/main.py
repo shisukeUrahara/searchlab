@@ -7,6 +7,7 @@ from searchlab.api.app import AppDeps, create_app
 from searchlab.config import load_env
 from searchlab.corpus.registry import REPO_ROOT, get_corpus
 from searchlab.domain.models import Split
+from searchlab.retrieval.dense import chunk_embedding_text
 from searchlab.services.eval_service import EvalOutcome, run_eval
 from searchlab.services.search_service import SearchService
 from searchlab.wiring import load_chunks, make_embedder, make_retrievers
@@ -26,7 +27,9 @@ def build() -> object:
                         repo_root=REPO_ROOT, corpus_label=spec.label)
 
     origins = os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
-    deps = AppDeps(search, corpus_dir, runs_dir, eval_fn, spec.label, corpus_dir / "graph.json")
+    dims = len(embedder.embed([chunk_embedding_text(chunks[0])])[0]) if chunks else 0
+    deps = AppDeps(search, corpus_dir, runs_dir, eval_fn, spec.label, corpus_dir / "graph.json",
+                   embedder.model_id, dims)
     return create_app(deps, origins)
 
 

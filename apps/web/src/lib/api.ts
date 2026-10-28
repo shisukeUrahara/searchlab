@@ -7,6 +7,11 @@ export const METHOD_LABEL: Record<Method, string> = {
   dense: "Dense (vector)",
   hybrid: "Hybrid (RRF)",
 };
+export const METHOD_META: Record<Method, { short: string; detail: string; dot: string; bar: string; text: string }> = {
+  bm25: { short: "BM25", detail: "Okapi · k1=1.5, b=0.75", dot: "bg-m-bm25", bar: "bg-m-bm25", text: "text-m-bm25" },
+  dense: { short: "Dense", detail: "text-embedding-3-small · cosine", dot: "bg-m-dense", bar: "bg-m-dense", text: "text-m-dense" },
+  hybrid: { short: "Hybrid", detail: "RRF k=60 · Σ 1/(k + rank)", dot: "bg-m-hybrid", bar: "bg-m-hybrid", text: "text-m-hybrid" },
+};
 
 export interface Hit {
   rank: number;
@@ -16,6 +21,8 @@ export interface Hit {
   heading: string;
   snippet: string;
   url: string;
+  source_id: string;
+  page: number | null;
 }
 export interface MethodResult {
   method: Method;
@@ -41,6 +48,7 @@ export interface Chunk {
   heading: string;
   text: string;
   url: string;
+  page?: number | null;
 }
 export interface ScoreRow {
   method: Method;
@@ -62,6 +70,20 @@ export interface EvalRun {
   manifest: Record<string, string | number | boolean | string[]>;
   scores: ScoreRow[];
   cases: CaseRow[];
+}
+export interface CorpusDoc {
+  source_id: string;
+  doc_number: string;
+  url: string;
+  pages: number | null;
+  chunks: number;
+}
+export interface Corpus {
+  label: string;
+  chunk_count: number;
+  embedding_model: string;
+  embedding_dims: number;
+  docs: CorpusDoc[];
 }
 export interface QueryPage {
   items: LabeledQuery[];
@@ -122,6 +144,7 @@ export const api = {
   queries: (split: "dev" | "test", limit = 200, offset = 0) =>
     request<QueryPage>(`/queries?split=${split}&limit=${limit}&offset=${offset}`),
   chunk: (id: string) => request<Chunk>(`/chunks/${encodeURIComponent(id)}`),
+  corpus: () => request<Corpus>("/corpus"),
   sources: () => request<{ sources: Source[] }>("/sources"),
   runs: () => request<RunSummary[]>("/eval-runs"),
   run: (id: string) => request<EvalRun>(`/eval-runs/${encodeURIComponent(id)}`),
