@@ -45,7 +45,8 @@ function DocCard({ d }: { d: CorpusDoc }) {
       <div className="h-1.5" style={{ background: docColor(d.source_id) }} aria-hidden />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
-          <span className="rounded-md border border-line px-2 py-0.5 font-mono text-xs" style={{ color: docColor(d.source_id) }}>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-0.5 font-mono text-xs">
+            <span className="size-2 rounded-full" style={{ background: docColor(d.source_id) }} aria-hidden />
             {d.doc_number}
           </span>
           <h2 className="mt-3 font-semibold leading-snug">{d.title}</h2>

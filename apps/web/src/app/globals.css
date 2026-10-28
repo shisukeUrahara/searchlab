@@ -12,15 +12,20 @@
   --line: #e3ded4;
   --primary: #2f5bea;
   --primary-ink: #ffffff;
-  --success: #0e9f8a;
+  --success: #0a7566;
   --success-bg: #e2f4f0;
-  --warn: #a8700f;
+  --warn: #8a5a00;
   --warn-bg: #fbf0d9;
   --danger: #c2463d;
   --danger-bg: #f9e3e0;
   --m-bm25: #e0782e;
   --m-dense: #3b6ff0;
   --m-hybrid: #11a38b;
+  /* darker method tones for text on light surfaces (WCAG AA 4.5:1) */
+  --m-bm25-ink: #a14a12;
+  --m-dense-ink: #2649c9;
+  --m-hybrid-ink: #0a7566;
+  --distractor-ink: #7a3fc2;
   --shadow: 0 1px 2px rgb(15 27 45 / 0.04), 0 4px 16px rgb(15 27 45 / 0.04);
   color-scheme: light;
 }
@@ -43,6 +48,10 @@
   --m-bm25: #f0924a;
   --m-dense: #6c8cff;
   --m-hybrid: #2cc7ae;
+  --m-bm25-ink: #f0924a;
+  --m-dense-ink: #8fa6ff;
+  --m-hybrid-ink: #2cc7ae;
+  --distractor-ink: #c4a0ff;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
   color-scheme: dark;
 }
@@ -65,6 +74,10 @@
   --color-m-bm25: var(--m-bm25);
   --color-m-dense: var(--m-dense);
   --color-m-hybrid: var(--m-hybrid);
+  --color-m-bm25-ink: var(--m-bm25-ink);
+  --color-m-dense-ink: var(--m-dense-ink);
+  --color-m-hybrid-ink: var(--m-hybrid-ink);
+  --color-distractor-ink: var(--distractor-ink);
   --shadow-card: var(--shadow);
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-display: var(--font-geist), var(--font-inter), system-ui, sans-serif;

@@ -10,9 +10,9 @@ import { docColor } from "@/lib/docs";
 const PAGE = 15;
 const CLASSES = ["exact_id", "paraphrase", "distractor"] as const;
 const CLASS_TONE: Record<string, string> = {
-  exact_id: "bg-m-bm25/15 text-m-bm25",
-  paraphrase: "bg-m-dense/15 text-m-dense",
-  distractor: "bg-[#b07cf7]/15 text-[#9b5de5] dark:text-[#c4a0ff]",
+  exact_id: "bg-m-bm25/10 text-m-bm25-ink",
+  paraphrase: "bg-m-dense/10 text-m-dense-ink",
+  distractor: "bg-distractor-ink/10 text-distractor-ink",
 };
 
 type Split = "dev" | "test";

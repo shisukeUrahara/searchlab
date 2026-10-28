@@ -86,7 +86,8 @@ export default function EvalPage() {
       {ready && run?.error !== undefined && <ErrorBox error={run.error} />}
       {d && m && (
         <>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-surface p-4 font-mono text-xs shadow-card sm:grid-cols-3 lg:grid-cols-6">
+          <div className="rounded-2xl border border-line bg-surface p-4 font-mono text-xs shadow-card">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
               ["Set", m.split === "test" ? "Holdout" : "Tuning"],
               ["Queries", String(m.sample_count)],
@@ -100,7 +101,8 @@ export default function EvalPage() {
                 <dd className="truncate text-ink" title={v}>{v}</dd>
               </div>
             ))}
-            <div className="col-span-2 flex items-center gap-2 sm:col-span-3 lg:col-span-6">
+          </dl>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               {m.git_dirty === false ? (
                 <span className="inline-flex items-center gap-1.5 text-success"><CircleCheck className="size-3.5" aria-hidden /> Clean tree: the commit identifies the exact code</span>
               ) : m.git_dirty ? (
@@ -108,7 +110,7 @@ export default function EvalPage() {
               ) : null}
               <span className="ml-auto text-muted">{m.created_at_utc}</span>
             </div>
-          </dl>
+          </div>
 
           <KpiCards scores={d.scores} />
 

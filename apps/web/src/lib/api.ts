@@ -19,9 +19,9 @@ export const METHOD_LABEL: Record<Method, string> = {
   hybrid: "Hybrid (RRF)",
 };
 export const METHOD_META: Record<Method, { short: string; detail: string; dot: string; bar: string; text: string }> = {
-  bm25: { short: "BM25", detail: "Okapi · k1=1.5, b=0.75", dot: "bg-m-bm25", bar: "bg-m-bm25", text: "text-m-bm25" },
-  dense: { short: "Dense", detail: "text-embedding-3-small · cosine", dot: "bg-m-dense", bar: "bg-m-dense", text: "text-m-dense" },
-  hybrid: { short: "Hybrid", detail: "RRF k=60 · Σ 1/(k + rank)", dot: "bg-m-hybrid", bar: "bg-m-hybrid", text: "text-m-hybrid" },
+  bm25: { short: "BM25", detail: "Okapi · k1=1.5, b=0.75", dot: "bg-m-bm25", bar: "bg-m-bm25", text: "text-m-bm25-ink" },
+  dense: { short: "Dense", detail: "text-embedding-3-small · cosine", dot: "bg-m-dense", bar: "bg-m-dense", text: "text-m-dense-ink" },
+  hybrid: { short: "Hybrid", detail: "RRF k=60 · Σ 1/(k + rank)", dot: "bg-m-hybrid", bar: "bg-m-hybrid", text: "text-m-hybrid-ink" },
 };
 
 export interface Hit {
