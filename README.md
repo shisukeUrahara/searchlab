@@ -1,12 +1,34 @@
 # SearchLab
 
-Run one query through **BM25**, **dense (vector)** and **hybrid (RRF)** retrieval and compare the three rankings side by side. A labeled query set scores each method with **Recall@5** and **MRR@10**. Every number below comes from a saved run in [`runs/`](runs/).
+**Compare keyword, vector and hybrid search on 3,203 passages from five NASA engineering handbooks, and measure which one finds the right answer.**
 
-![Search compare](docs/img/search-compare.png)
+SearchLab runs one question through three retrievers and shows the rankings side by side. A labeled set of 120 questions scores each method, with 95% confidence intervals, and a WebGL map shows every passage in embedding space.
 
-> **Unofficial.** Independent portfolio project, not affiliated with or endorsed by GitHub. The indexed text is six pages of [github/docs](https://github.com/github/docs) (CC BY 4.0), pinned to commit `9568e964`. See [NOTICE.md](NOTICE.md).
+![Search page in dark mode on desktop and light mode on a phone](docs/img/search-dark-light.png)
 
-## Results (frozen test split, N=30, run once)
+> **Unofficial.** Independent portfolio project, not affiliated with or endorsed by NASA. The handbooks are US Government works (17 U.S.C. §105). See [NOTICE.md](NOTICE.md).
+
+## What's inside
+
+| Page | What it does |
+|---|---|
+| **Search** | One question, three ranked columns: **BM25** (keyword), **Dense** (vector, `text-embedding-3-small`) and **Hybrid** (Reciprocal Rank Fusion). For a labeled question it shows where each method placed the expected passage. |
+| **Vector map** | All 3,203 passages as dots, placed by meaning (UMAP) and linked to their 5 nearest neighbours. A search lights up what each method retrieved. |
+| **Evaluation** | Score cards (MRR@10 with 95% CI, Recall@1/5, nDCG@10), a Recall@k curve, results by question type, head-to-head counts and a per-question rank heatmap. Every number comes from a saved run folder. |
+| **Queries** | The 120 labeled questions (40 tuning, 80 holdout), filterable and paginated. |
+| **Sources** | The five NASA PDFs with page counts, checksums and how the corpus is built. |
+
+Light and dark themes, mobile layouts and keyboard navigation throughout.
+
+![Vector map of 3,203 passages, colored by document](docs/img/vector-map.png)
+
+![MRR@10 by question type for BM25, vector and hybrid search](docs/img/eval-by-class.png)
+
+## v1 (archived): GitHub Docs results
+
+The first version used six GitHub Docs pages (78 chunks). It is kept for reproducibility under `fixtures/github-docs` and `runs/github-docs`.
+
+### v1 results (frozen test split, N=30, run once)
 
 | method | Recall@5 | MRR@10 |
 |---|---|---|
