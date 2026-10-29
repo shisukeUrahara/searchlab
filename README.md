@@ -124,17 +124,6 @@ Without a key, a new question still returns BM25 results. The Dense and Hybrid c
 | Vector map is blank | Your browser has WebGL turned off. Try Chrome or Firefox with hardware acceleration on. |
 | Evaluation page says "No evaluation runs yet" | Create one: `cd services/api && uv run searchlab eval --split dev`. |
 
-### Reproduce the evaluation
-
-```bash
-cd services/api
-uv run searchlab verify              # snapshot files match manifest checksums
-uv run searchlab tune                # RRF k on the DEV split only
-uv run searchlab eval --split test   # writes runs/<run_id>/
-```
-
-Each run folder has `run_manifest.json` (git SHA, dataset/corpus/chunk checksums, embedding model, k, N), `per_case_results.jsonl`, `scores.csv`, `chart.png`, `checksums.txt`.
-
 ## How it works
 
 ```
@@ -154,11 +143,63 @@ Design decisions: [`docs/adr/`](docs/adr/). Code walkthrough: [`docs/CODE_TOUR.m
 ## Tests
 
 ```bash
-cd services/api && uv run pytest && uv run ruff check . && uv run mypy
-cd apps/web && pnpm lint && pnpm typecheck && pnpm test
-# browser smoke tests (API on :8000 and web on :3000 must be running)
-pnpm exec playwright test
+# API: 100 unit and integration tests, lint, strict types
+cd services/api
+uv run pytest -q
+uv run ruff check .
+uv run mypy
+
+# Web: component tests, lint, types, production build
+cd apps/web
+pnpm test
+pnpm lint
+pnpm typecheck
+pnpm build
 ```
+
+**Browser tests** need the API and web app running (Docker or local). They cover desktop and a Pixel 7 phone, light and dark themes, no sideways scrolling, and automatic WCAG A/AA accessibility checks on every page.
+
+```bash
+cd apps/web
+pnpm exec playwright install chromium   # first time only
+pnpm exec playwright test               # set E2E_BASE_URL if the app is not on :3000
+```
+
+GitHub Actions runs the API and web checks on every push.
+
+## Reproduce the evaluation
+
+All commands run from `services/api`. Use `--corpus github-docs` for the archived v1.
+
+```bash
+uv run searchlab --corpus nasa fetch    # download the 5 PDFs (not committed); rewrites source_manifest.json
+uv run searchlab --corpus nasa verify   # PDFs match the manifest checksums
+uv run searchlab --corpus nasa chunk    # rebuild chunks.jsonl (identical output on rerun)
+uv run searchlab tune                   # compare RRF k values on the tuning set only
+uv run searchlab eval --split dev       # tuning-set run
+uv run searchlab eval --split test      # holdout run: refuses to start if git has uncommitted changes
+```
+
+Each run writes `runs/<corpus>/<run_id>/` with `run_manifest.json` (git commit, clean-tree flag, dataset and corpus checksums, model, k, N), `per_case_results.jsonl`, `scores.json`, `scores.csv`, `chart.png` and `checksums.txt`.
+
+Confidence intervals are 95% percentile bootstrap over questions (1,000 draws, fixed seed).
+
+### CLI reference
+
+| Command | What it does | Needs a key |
+|---|---|---|
+| `fetch` | Download source documents and write the manifest | no |
+| `verify` | Check downloaded files against manifest checksums | no |
+| `chunk` | Clean and split documents into `chunks.jsonl` | no |
+| `embed` | Embed every chunk (cache first) | only for uncached chunks |
+| `search "<question>"` | Run one question through all three methods | only for new questions |
+| `tune` | Compare RRF k values on the tuning set | no |
+| `eval --split dev\|test` | Score all methods and write a run folder | no |
+| `draft-queries` | Draft labeled questions with an LLM | yes |
+| `judge-pool` | LLM-judge pooled top-10 results to build answer sets | yes |
+| `review-sheet` | Write `docs/label_review.md` for a human spot-check | no |
+| `apply-review` | Apply the spot-check and report agreement | no |
+| `project` | Rebuild the vector map (`uv sync --group viz` first) | no |
 
 ## Known limits
 - 78 chunks from 6 pages. Results will not transfer to large corpora.
