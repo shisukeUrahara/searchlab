@@ -24,25 +24,25 @@ Light and dark themes, mobile layouts and keyboard navigation throughout.
 
 ![MRR@10 by question type for BM25, vector and hybrid search](docs/img/eval-by-class.png)
 
-## v1 (archived): GitHub Docs results
+## Results so far
 
-The first version used six GitHub Docs pages (78 chunks). It is kept for reproducibility under `fixtures/github-docs` and `runs/github-docs`.
+> **Preliminary.** These numbers come from the 40-question **tuning set**, used to choose settings, so they are optimistic. The labels are still being spot-checked by a person. The 80-question **holdout** run comes after that and will replace this section.
 
-### v1 results (frozen test split, N=30, run once)
+| Method | MRR@10 (95% CI) | Recall@1 | Recall@5 | nDCG@10 |
+|---|---|---|---|---|
+| BM25 | 0.685 (0.581 to 0.791) | 52.5% | 90.0% | 0.577 |
+| Dense | 0.765 (0.661 to 0.868) | 65.0% | 90.0% | 0.620 |
+| Hybrid | 0.875 (0.796 to 0.946) | 77.5% | 100.0% | 0.693 |
 
-| method | Recall@5 | MRR@10 |
-|---|---|---|
-| BM25 | 1.000 | 0.747 |
-| Dense (`text-embedding-3-small`) | 1.000 | 0.794 |
-| Hybrid (RRF, k=60) | 1.000 | 0.856 |
+MRR@10 by question type:
 
-Run: [`runs/github-docs/20261027T115232Z-test-k60`](runs/github-docs/20261027T115232Z-test-k60) · analysis: [`analysis.md`](runs/github-docs/20261027T115232Z-test-k60/analysis.md)
+| Type | n | BM25 | Dense | Hybrid |
+|---|---|---|---|---|
+| Exact identifier (e.g. "KDP C") | 13 | 0.872 | 0.603 | 0.872 |
+| Paraphrase | 17 | 0.600 | 0.780 | 0.873 |
+| Distractor | 10 | 0.584 | 0.950 | 0.883 |
 
-**What this does and does not show**
-- Recall@5 is saturated. The corpus has only 78 chunks, so the top 5 is about 6% of it. Use MRR@10 to compare methods here.
-- N=30 is small. No confidence intervals were computed. Treat gaps of a few hundredths as noise.
-- I expected dense search to miss exact API identifiers. **It did not.** Dense ranked `X-Hub-Signature-256` first where BM25 ranked it 4th, while BM25 won on `secure_compare` and `x-ratelimit-used`. Hybrid never ranked the first expected chunk below 3rd and was never strictly worse than both other methods (it tied the lowest rank on 3 queries).
-- Queries are synthetic: written by the author with model help, then keyword-checked against their gold chunks. Some queries have more than one acceptable chunk.
+Keyword search wins on exact identifiers, vector search wins on reworded questions, and hybrid is strong on both. With 10 to 17 questions per type the intervals are wide, so small gaps are noise.
 
 ## Quick start (Docker)
 
@@ -127,16 +127,40 @@ Without a key, a new question still returns BM25 results. The Dense and Hybrid c
 ## How it works
 
 ```
-Next.js UI ─HTTP→ FastAPI ─→ SearchService ─┬ Bm25Retriever
-                                            ├ DenseRetriever ─→ Embedder (cached) + Qdrant
-                                            └ HybridRetriever (RRF over the two)
+Next.js UI ──HTTP──> FastAPI ──> SearchService ─┬─ Bm25Retriever
+                                                ├─ DenseRetriever ──> CachingEmbedder (OpenAI) + Qdrant
+                                                └─ HybridRetriever (RRF over the two)
+                         └─────> EvalService ──> metrics + bootstrap CIs ──> runs/<corpus>/<run_id>/
 ```
 
-- `corpus/`: fetch pinned pages, strip Liquid, chunk by heading, stable content-hash chunk IDs, checksummed manifest
-- `retrieval/`: identifier-aware tokenizer, BM25, dense, RRF
-- `embeddings/`: OpenAI adapter, disk cache decorator, fake embedder for tests
-- `eval/`: pure metrics, runner, run artifacts
-- `services/`, `api/`: use cases and HTTP layer; `wiring.py` is the only place that picks concrete classes
+1. **Corpus.** Five public NASA PDFs are downloaded and checksummed. Running headers and footers are stripped, sections come from the PDF outline (or numbered headings), and text is packed into passages of up to 1,000 characters. Passage IDs are a hash of document, section and text, so rebuilds are byte-identical.
+2. **Retrieval.** BM25 uses a tokenizer that keeps identifiers like `NPR 7123.1` whole. Dense search uses `text-embedding-3-small` (1,536 dimensions) with cosine similarity in Qdrant. Hybrid fuses both with Reciprocal Rank Fusion (k = 60).
+3. **Labels.** An LLM drafts 120 questions from passages in three types. A stronger LLM judges which pooled top-10 results also answer each one (graded 0 to 2; only 2 counts). A person spot-checks a random sample.
+4. **Evaluation.** Recall@1/3/5/10, MRR@10 and nDCG@10 per method and question type, with 95% bootstrap confidence intervals.
+5. **Vector map.** UMAP projects the vectors to 2D, and each passage links to its 5 nearest neighbours. It is precomputed into `graph.json` and drawn with sigma.js (WebGL).
+
+### Project structure
+
+```
+searchlab/
+├── services/api/                 FastAPI service and CLI (Python 3.12, uv)
+│   └── src/searchlab/
+│       ├── corpus/               fetch, PDF loader, chunker, manifest, corpus registry
+│       ├── retrieval/            tokenizer, BM25, dense, hybrid (RRF)
+│       ├── embeddings/           OpenAI adapter, disk cache, fake embedder for tests
+│       ├── store/                Qdrant vector store (batched upserts)
+│       ├── eval/                 metrics, bootstrap CIs, runner, run artifacts
+│       ├── labeling/             LLM drafting, pooled judging, human review sheet
+│       ├── viz/                  UMAP layout and kNN graph
+│       ├── services/, api/       use cases and HTTP layer
+│       └── wiring.py             the only place that picks concrete classes
+├── apps/web/                     Next.js app (search, map, evaluation, queries, sources)
+├── fixtures/nasa/                manifest, chunks, labeled queries, cached vectors, graph
+├── fixtures/github-docs/         archived v1 corpus
+├── runs/                         saved evaluation runs
+├── design/stitch/                Google Stitch design exports
+└── docs/                         decision records, code tour, label review sheet
+```
 
 Design decisions: [`docs/adr/`](docs/adr/). Code walkthrough: [`docs/CODE_TOUR.md`](docs/CODE_TOUR.md).
 
@@ -202,7 +226,33 @@ Confidence intervals are 95% percentile bootstrap over questions (1,000 draws, f
 | `project` | Rebuild the vector map (`uv sync --group viz` first) | no |
 
 ## Known limits
-- 78 chunks from 6 pages. Results will not transfer to large corpora.
-- No reranker, no query rewriting, one embedding model.
-- Cleaning drops GitHub's shared `reusables` snippets (text lives in other files), so a few sections are shorter than on docs.github.com.
-- UI was built by hand to a small design token set. A Google Stitch pass was attempted and could not authenticate.
+
+- **Synthetic, LLM-judged labels.** Questions are drafted from passages, which can favour keyword matching. The first LLM judge was too lenient; the stricter one is better but not perfect, which is why a person spot-checks a sample.
+- **Small groups.** 10 to 17 questions per type. Read the confidence intervals, not just the averages.
+- **PDF extraction noise.** Tables and diagrams extract poorly, and a few chunks still carry footer text such as "This document does not bind the public".
+- **One embedding model, no reranker, no query rewriting.**
+- **The map is a 2D approximation.** Nearby dots are similar, but distances are not exact.
+
+## v1 (archived): GitHub Docs
+
+The first version used six GitHub Docs pages (78 chunks). It is kept for reproducibility under `fixtures/github-docs` and `runs/github-docs`.
+
+Frozen test split, N=30, run once:
+
+| method | Recall@5 | MRR@10 |
+|---|---|---|
+| BM25 | 1.000 | 0.747 |
+| Dense (`text-embedding-3-small`) | 1.000 | 0.794 |
+| Hybrid (RRF, k=60) | 1.000 | 0.856 |
+
+Run: [`runs/github-docs/20261027T115232Z-test-k60`](runs/github-docs/20261027T115232Z-test-k60) · analysis: [`analysis.md`](runs/github-docs/20261027T115232Z-test-k60/analysis.md)
+
+**What this does and does not show**
+- Recall@5 is saturated. The corpus has only 78 chunks, so the top 5 is about 6% of it. Use MRR@10 to compare methods here.
+- N=30 is small. No confidence intervals were computed. Treat gaps of a few hundredths as noise.
+- I expected dense search to miss exact API identifiers. **It did not.** Dense ranked `X-Hub-Signature-256` first where BM25 ranked it 4th, while BM25 won on `secure_compare` and `x-ratelimit-used`. Hybrid never ranked the first expected chunk below 3rd and was never strictly worse than both other methods (it tied the lowest rank on 3 queries). On the larger NASA corpus the expected pattern does appear: keyword search beats vector search on identifiers (see Results so far).
+- Queries are synthetic: written by the author with model help, then keyword-checked against their gold chunks. Some queries have more than one acceptable chunk.
+
+## License and sources
+
+Code: MIT ([LICENSE](LICENSE)). NASA documents are US Government works and are not stored in this repository; they are downloaded by `searchlab fetch`. The archived v1 corpus uses GitHub Docs content under CC BY 4.0. Details in [NOTICE.md](NOTICE.md).
