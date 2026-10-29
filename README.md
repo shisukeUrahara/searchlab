@@ -44,25 +44,85 @@ Run: [`runs/github-docs/20261027T115232Z-test-k60`](runs/github-docs/20261027T11
 - I expected dense search to miss exact API identifiers. **It did not.** Dense ranked `X-Hub-Signature-256` first where BM25 ranked it 4th, while BM25 won on `secure_compare` and `x-ratelimit-used`. Hybrid never ranked the first expected chunk below 3rd and was never strictly worse than both other methods (it tied the lowest rank on 3 queries).
 - Queries are synthetic: written by the author with model help, then keyword-checked against their gold chunks. Some queries have more than one acceptable chunk.
 
-## Run it
+## Quick start (Docker)
 
-Needs Docker. No API key is required: vectors for all 78 chunks and all 45 queries are committed in `fixtures/github-docs/embeddings_cache/`.
+You need Docker with Compose v2.24 or newer. No API key is required: vectors for all 3,203 passages and all labeled questions are committed.
 
 ```bash
+git clone https://github.com/shisukeUrahara/searchlab.git
+cd searchlab
+
+# Optional: add your OpenAI key so brand-new questions work in vector and hybrid search
+cp services/api/.env.example services/api/.env   # then edit OPENAI_API_KEY
+
 docker compose up --build
-# web: http://localhost:3000   api: http://localhost:8000/docs
 ```
 
-A query that is not in the cache returns `503 embedding_unavailable` unless you set `OPENAI_API_KEY` in your environment. Ports bind to `127.0.0.1` only. With a key set, every new query calls the OpenAI embeddings API and is appended to the cache file, so do not expose this publicly.
+| Service | URL |
+|---|---|
+| Web app | http://localhost:3000 |
+| API docs (OpenAPI) | http://localhost:8000/docs |
 
-### Without Docker
+The API takes about 20 seconds on first start while it loads the vectors into Qdrant. Stop everything with `docker compose down`.
+
+Ports bind to `127.0.0.1` only. Don't expose the API publicly with a key set: every new question calls the OpenAI embeddings API.
+
+## Local development (without Docker)
+
+You need Python 3.12 with [uv](https://docs.astral.sh/uv/), and Node 24 with pnpm 10.
+
+**Terminal 1: API**
 
 ```bash
-cd services/api && uv sync
-uv run searchlab search "x-ratelimit-remaining"   # CLI, three methods
+cd services/api
+cp .env.example .env        # optional, then edit OPENAI_API_KEY
+uv sync
 uv run uvicorn searchlab.api.main:app --port 8000
-cd ../../apps/web && pnpm install && pnpm dev
 ```
+
+**Terminal 2: web app**
+
+```bash
+cd apps/web
+cp .env.example .env.local  # optional, defaults already point at localhost:8000
+pnpm install
+pnpm dev
+```
+
+Open http://localhost:3000. Without `QDRANT_URL`, the API keeps vectors in memory, so no Qdrant server is needed.
+
+## Environment variables
+
+| Variable | File | Default | What it does |
+|---|---|---|---|
+| `OPENAI_API_KEY` | `services/api/.env` | unset | Embeds new questions with `text-embedding-3-small`. Also needed to rebuild the corpus or labels. |
+| `SEARCHLAB_CORPUS` | `services/api/.env` | `nasa` | Corpus to serve: `nasa`, or `github-docs` for the archived v1. |
+| `QDRANT_URL` | `services/api/.env` | unset (in-memory) | Qdrant server to use. Docker Compose sets `http://qdrant:6333`. |
+| `CORS_ORIGINS` | `services/api/.env` | `http://localhost:3000` | Comma-separated browser origins allowed to call the API. |
+| `NEXT_PUBLIC_API_URL` | `apps/web/.env.local` | `http://localhost:8000` | Where the browser reaches the API. Read at build time. |
+| `E2E_BASE_URL` | shell | `http://localhost:3000` | Web app URL for the Playwright tests. |
+
+Both `.env` files are gitignored. Docker Compose reads `services/api/.env` when the container starts; it is never copied into the image.
+
+### What works without a key
+
+| Question | BM25 | Dense | Hybrid |
+|---|---|---|---|
+| A labeled example (vectors are committed) | yes | yes | yes |
+| A brand-new question | yes | needs key | needs key |
+
+Without a key, a new question still returns BM25 results. The Dense and Hybrid columns explain that an embedding is needed.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| "Cannot reach the API" in the web app | Check the API is running: `curl localhost:8000/health`. In Docker, wait for the first start to finish. |
+| Port 3000 or 8000 already in use | Find the process with `lsof -i :3000` and stop it, or stop old containers with `docker compose down`. |
+| Web app on another port is blocked by CORS | Add its origin to `CORS_ORIGINS`, for example `http://localhost:3001`. |
+| Changed `NEXT_PUBLIC_API_URL` but nothing changed | It is read at build time. Restart `pnpm dev`, or rebuild with `docker compose up --build`. |
+| Vector map is blank | Your browser has WebGL turned off. Try Chrome or Firefox with hardware acceleration on. |
+| Evaluation page says "No evaluation runs yet" | Create one: `cd services/api && uv run searchlab eval --split dev`. |
 
 ### Reproduce the evaluation
 
