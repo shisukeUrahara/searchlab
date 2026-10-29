@@ -1,13 +1,16 @@
 """Use case: run one query through the requested methods and time each."""
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from searchlab.domain.models import Chunk, ScoredChunk
 from searchlab.domain.ports import Retriever
-from searchlab.embeddings.cache import CacheMissError
+from searchlab.embeddings.errors import CacheMissError, EmbeddingError
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -15,7 +18,7 @@ class MethodResult:
     method: str
     hits: list[ScoredChunk]
     latency_ms: float
-    error: str | None = None  # e.g. "embedding_unavailable"; other methods still answer
+    error: str | None = None  # "embedding_unavailable" | "embedding_failed"; others still answer
 
 
 class SearchService:
@@ -41,20 +44,27 @@ class SearchService:
         return counts
 
     def search(self, query: str, methods: Sequence[str], top_k: int) -> list[MethodResult]:
-        """Run each method; a method that needs a missing embedding reports an error instead.
+        """Run each method; a method whose embedding fails reports an error instead.
 
-        Raises CacheMissError only when every requested method failed that way.
+        Re-raises the embedding error only when every requested method failed.
         """
         out: list[MethodResult] = []
+        last: EmbeddingError | None = None
         for m in methods:
             start = time.perf_counter()
             try:
                 hits, error = self._retrievers[m].search(query, top_k), None
-            except CacheMissError:
-                hits, error = [], "embedding_unavailable"
+            except EmbeddingError as exc:
+                last = exc
+                if isinstance(exc, CacheMissError):
+                    error = "embedding_unavailable"
+                else:
+                    error = "embedding_failed"
+                    log.warning("embedding failed for method %s: %s", m, exc)
+                hits = []
             out.append(MethodResult(m, hits, (time.perf_counter() - start) * 1000, error))
-        if out and all(r.error for r in out):
-            raise CacheMissError("no method could answer without an embedding")
+        if last is not None and all(r.error for r in out):
+            raise last
         return out
 
     def chunk(self, chunk_id: str) -> Chunk | None:

@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from searchlab.embeddings.cache import CacheMissError
+from searchlab.embeddings.errors import CacheMissError, EmbeddingProviderError
 
 
 class ApiError(Exception):
@@ -35,6 +35,11 @@ def install_error_handlers(app: FastAPI) -> None:
     async def _cache_miss(request: Request, exc: CacheMissError) -> JSONResponse:
         msg = "This query has no cached embedding and no OPENAI_API_KEY is configured."
         return JSONResponse(_body(request, "embedding_unavailable", msg), status_code=503)
+
+    @app.exception_handler(EmbeddingProviderError)
+    async def _provider(request: Request, exc: EmbeddingProviderError) -> JSONResponse:
+        msg = "The embedding provider rejected the request. Check OPENAI_API_KEY."
+        return JSONResponse(_body(request, "embedding_failed", msg), status_code=502)
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(request: Request, exc: StarletteHTTPException) -> JSONResponse:

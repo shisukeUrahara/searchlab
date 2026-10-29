@@ -164,3 +164,34 @@ def test_uncached_query_falls_back_to_bm25_with_per_method_errors(tmp_path: Path
     assert by["bm25"]["error"] is None and by["bm25"]["hits"]
     assert by["dense"]["error"] == "embedding_unavailable" and by["dense"]["hits"] == []
     assert by["hybrid"]["error"] == "embedding_unavailable"
+
+
+class _BrokenEmbedder:
+    model_id = "broken"
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        from searchlab.embeddings.errors import EmbeddingProviderError
+
+        raise EmbeddingProviderError("AuthenticationError from OpenAI")
+
+
+def test_rejected_key_falls_back_to_bm25_and_502_when_all_fail(tmp_path: Path) -> None:
+    from qdrant_client import QdrantClient
+
+    from searchlab.retrieval.bm25 import Bm25Retriever
+    from searchlab.retrieval.dense import DenseRetriever, build_dense_index
+    from searchlab.store.qdrant_store import QdrantVectorStore
+
+    chunks = load_chunks(CORPUS)
+    store = QdrantVectorStore(QdrantClient(":memory:"))
+    build_dense_index(chunks, FakeEmbedder(), store)
+    retrievers = {"bm25": Bm25Retriever(chunks), "dense": DenseRetriever(_BrokenEmbedder(), store)}
+    app = create_app(AppDeps(SearchService(retrievers, chunks), CORPUS, tmp_path,
+                             lambda s, k: run_eval(CORPUS, FakeEmbedder(), s, k)))
+    client = TestClient(app)
+    mixed = client.post("/search", json={"query": "rate limit", "methods": ["bm25", "dense"]})
+    by = {m["method"]: m for m in mixed.json()["results"]}
+    assert mixed.status_code == 200 and by["bm25"]["hits"]
+    assert by["dense"]["error"] == "embedding_failed"
+    only = client.post("/search", json={"query": "rate limit", "methods": ["dense"]})
+    assert only.status_code == 502 and only.json()["code"] == "embedding_failed"

@@ -54,6 +54,11 @@ describe("MethodColumn", () => {
     expect(screen.queryByText(/Expected passage/)).toBeNull();
   });
 
+  it("explains a rejected API key", () => {
+    render(<MethodColumn docNumbers={docs} result={{ ...result, hits: [], error: "embedding_failed" }} goldIds={[]} onOpen={() => {}} />);
+    expect(screen.getByText("The embedding provider rejected this request")).toBeInTheDocument();
+  });
+
   it("handles empty results", () => {
     render(<MethodColumn docNumbers={docs} result={{ ...result, hits: [] }} goldIds={[]} onOpen={() => {}} />);
     expect(screen.getByText("No matching passages.")).toBeInTheDocument();

@@ -11,7 +11,7 @@ from searchlab.corpus import pipeline
 from searchlab.corpus.manifest import verify_manifest, write_manifest
 from searchlab.corpus.registry import REPO_ROOT, CorpusSpec, get_corpus
 from searchlab.domain.models import LabeledQuery, QueryClass, Split
-from searchlab.embeddings.cache import CacheMissError
+from searchlab.embeddings.errors import CacheMissError, EmbeddingError
 from searchlab.eval.runner import ScoreRow
 from searchlab.labeling.llm import JsonLlm
 from searchlab.services.eval_service import DirtyTreeError, run_eval
@@ -111,6 +111,9 @@ def search(query: str, top_k: int = 5) -> None:
             hits = retriever.search(query, top_k)
         except CacheMissError:
             typer.echo("query not in embedding cache and OPENAI_API_KEY is not set", err=True)
+            continue
+        except EmbeddingError as exc:
+            typer.echo(f"embedding failed ({exc}); check OPENAI_API_KEY", err=True)
             continue
         for h in hits:
             typer.echo(f"{h.rank}. {h.score:.3f}  {h.chunk.heading[:60]}  [{h.chunk.chunk_id[:8]}]")

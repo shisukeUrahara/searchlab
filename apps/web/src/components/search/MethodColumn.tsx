@@ -39,7 +39,16 @@ export function MethodColumn({ result, goldIds, docNumbers, onOpen }: Props) {
           </p>
         )}
       </header>
-      {result.error === "embedding_unavailable" ? (
+      {result.error === "embedding_failed" ? (
+        <div role="status" className="rounded-xl border border-dashed border-danger/40 bg-danger-bg/60 p-5 text-sm">
+          <p className="flex items-center gap-2 font-medium text-danger">
+            <KeyRound className="size-4" aria-hidden /> The embedding provider rejected this request
+          </p>
+          <p className="mt-1.5 text-muted">
+            Check <code className="font-mono text-xs">OPENAI_API_KEY</code> in services/api/.env. Keyword search (BM25) still answers.
+          </p>
+        </div>
+      ) : result.error === "embedding_unavailable" ? (
         <div role="status" className="rounded-xl border border-dashed border-warn/40 bg-warn-bg/60 p-5 text-sm">
           <p className="flex items-center gap-2 font-medium text-warn">
             <KeyRound className="size-4" aria-hidden /> Needs an embedding for this question

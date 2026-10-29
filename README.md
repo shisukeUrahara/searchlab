@@ -119,6 +119,7 @@ Without a key, a new question still returns BM25 results. The Dense and Hybrid c
 |---|---|
 | "Cannot reach the API" in the web app | Check the API is running: `curl localhost:8000/health`. In Docker, wait for the first start to finish. |
 | Port 3000 or 8000 already in use | Find the process with `lsof -i :3000` and stop it, or stop old containers with `docker compose down`. |
+| "The embedding provider rejected this request" in the Dense/Hybrid columns | `OPENAI_API_KEY` is wrong or still the fake placeholder from `.env.example`. Fix it and restart the API. BM25 keeps working meanwhile. |
 | Web app on another port is blocked by CORS | Add its origin to `CORS_ORIGINS`, for example `http://localhost:3001`. |
 | Changed `NEXT_PUBLIC_API_URL` but nothing changed | It is read at build time. Restart `pnpm dev`, or rebuild with `docker compose up --build`. |
 | Vector map is blank | Your browser has WebGL turned off. Try Chrome or Firefox with hardware acceleration on. |

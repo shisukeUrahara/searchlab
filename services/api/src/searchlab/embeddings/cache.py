@@ -13,10 +13,9 @@ from pathlib import Path
 import numpy as np
 
 from searchlab.domain.ports import Embedder
+from searchlab.embeddings.errors import CacheMissError
 
-
-class CacheMissError(RuntimeError):
-    """Raised when a vector is not cached and no live embedder is available."""
+__all__ = ["CacheMissError", "CachingEmbedder"]
 
 
 def _key(text: str) -> str:

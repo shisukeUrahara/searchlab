@@ -90,3 +90,19 @@ def test_vectors_stored_as_float16(tmp_path: Path) -> None:
 
     CachingEmbedder(tmp_path, "m", Counting()).embed(["abc"])
     assert np.load(tmp_path / "m.npz")["vectors"].dtype == np.float16
+
+
+def test_openai_errors_become_provider_errors() -> None:
+    import httpx
+    from openai import APIConnectionError
+
+    from searchlab.embeddings.errors import EmbeddingError, EmbeddingProviderError
+
+    def create(model: str, input: list[str]) -> SimpleNamespace:
+        raise APIConnectionError(request=httpx.Request("POST", "https://api.openai.com"))
+
+    client = SimpleNamespace(embeddings=SimpleNamespace(create=create))
+    with pytest.raises(EmbeddingProviderError) as info:
+        OpenAIEmbedder(client).embed(["x"])
+    assert isinstance(info.value, EmbeddingError)
+    assert "key" not in str(info.value).lower()  # never echo credentials
